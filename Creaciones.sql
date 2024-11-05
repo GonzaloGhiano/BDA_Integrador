@@ -25,6 +25,7 @@ drop table gestion_sistema.Sucursal;
 drop table gestion_sistema.Medio_de_Pago
 drop table gestion_productos.Linea_Producto
 drop table gestion_productos.Producto
+drop table gestion_productos.Venta
 */
 
 
@@ -95,6 +96,7 @@ CREATE TABLE gestion_productos.Producto(
 	referencia_precio decimal(10,2) check(referencia_precio>0) null,
 	reference_unit varchar(6) null, --variabilidad de 1 a 6, mayoria 2, que conviene?
 	cod_linea_prod int,
+	CONSTRAINT pk_producto primary key(ID_prod),
 	CONSTRAINT fk_linea_prod foreign key(cod_linea_prod) references gestion_productos.Linea_Producto(ID_lp)
 );
 GO
@@ -103,7 +105,7 @@ CREATE TABLE gestion_productos.Venta(
 	ID_venta INT IDENTITY(1,1) primary key,
 	ID_factura CHAR(11) not null UNIQUE,
 	tipo_factura char(1) not null,
-	ciudad varchar(30) not null,
+	ID_sucursal int not null,
 	tipo_cliente char(6),
 	genero char(6),
 	ID_prod int not null,
@@ -125,8 +127,7 @@ CREATE TABLE gestion_productos.Venta(
 	CONSTRAINT CHECK_tipoCliente CHECK(
 		tipo_cliente LIKE 'Member' or
 		tipo_cliente LIKE 'Normal'),
-	CONSTRAINT CHECK_ciudad CHECK(
-		ciudad in(select ciudad from gestion_sistema.Sucursal))
+	CONSTRAINT fk_sucursal foreign key(ID_sucursal) references gestion_sistema.Sucursal(ID_sucursal)
 );
 GO
 
