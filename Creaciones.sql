@@ -101,24 +101,21 @@ CREATE TABLE gestion_productos.Producto(
 );
 GO
 
-CREATE TABLE gestion_productos.Venta(
+CREATE TABLE gestion_productos.Comprobante_venta(
 	ID_venta INT IDENTITY(1,1) primary key,
 	ID_factura CHAR(11) not null UNIQUE,
 	tipo_factura char(1) not null,
 	ID_sucursal int not null,
 	tipo_cliente char(6),
 	genero char(6),
-	ID_prod int not null,
-	precio_unitario decimal(10,2) check(precio_unitario>0) not null,
-	cantidad int not null check(cantidad>0),
 	fecha DATE not null,
 	hora TIME not null,
 	id_medio_pago int not null,
 	empleado_legajo int not null,
 	identificador_pago varchar(22) not null,
+	total decimal(10,2) CHECK(total>0),
 	CONSTRAINT fk_empleado foreign key(empleado_legajo) references gestion_empleados.Empleado(legajo),
 	CONSTRAINT fk_medio_pago foreign key(id_medio_pago) references gestion_sistema.Medio_de_Pago(ID_MP),
-	CONSTRAINT fk_producto foreign key(ID_prod) references gestion_productos.Producto(ID_prod),
 	CONSTRAINT CHECK_tipo_factura CHECK(
 		tipo_factura in('A','B','C')),
 	CONSTRAINT CHECK_genero CHECK(
@@ -131,19 +128,12 @@ CREATE TABLE gestion_productos.Venta(
 );
 GO
 
-/*
-Tabla Ventas	
-ID	Autoincremental
-ID Factura	unique
-Ciudad	
-Tipo de Cliente	
-Genero	
-Producto	fk a producto
-Precio Unitario	
-Cantidad	
-Fecha	
-Hora	
-Medio de Pago	fk a la tabla Medios de pago
-Empleado	fk a la tabla empleados
-Identificador de pago	
-*/
+CREATE TABLE gestion_productos.Detalle_venta(
+	ID_detalle_factura INT IDENTITY(1,1) primary key,
+	ID_factura CHAR(11) not null,
+	ID_prod int not null,
+	precio_unitario decimal(10,2) check(precio_unitario>0) not null,
+	cantidad int not null check(cantidad>0),
+	CONSTRAINT fk_producto foreign key(ID_prod) references gestion_productos.Producto(ID_prod),
+);
+
