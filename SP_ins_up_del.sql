@@ -1,7 +1,7 @@
 USE Com2900G02
 GO
 
-create procedure gestion_sistema.InsertarSucursal
+create or alter procedure gestion_sistema.InsertarSucursal
 @nombre varchar(30),
 @ciudad varchar(30),
 @direccion varchar(70),
@@ -16,7 +16,7 @@ begin
 end
 GO
 
-create procedure gestion_sistema.ModificarSucursal
+create or alter procedure gestion_sistema.ModificarSucursal
 @ID_sucursal int,
 @nombre varchar(30) = NULL,
 @ciudad varchar(30) = NULL,
@@ -37,7 +37,7 @@ begin
 end
 GO
 
-create procedure gestion_sistema.BorrarSucursal
+create or alter procedure gestion_sistema.BorrarSucursal
 @ID_sucursal int
 as
 begin
@@ -49,7 +49,7 @@ end
 GO
 
 
-create procedure gestion_empleados.InsertarCargo
+create or alter procedure gestion_empleados.InsertarCargo
 @cargo varchar(25)
 as
 begin
@@ -60,7 +60,7 @@ begin
 end
 GO
 
-create procedure gestion_empleados.ModificarCargo
+create or alter procedure gestion_empleados.ModificarCargo
 @cargo varchar(25)
 as
 begin
@@ -72,7 +72,7 @@ begin
 end
 GO
 
-create procedure gestion_empleados.BorrarCargo
+create or alter procedure gestion_empleados.BorrarCargo
 @cargo varchar(25)
 as
 begin
@@ -84,7 +84,7 @@ end
 GO
 
 
-create procedure gestion_empleados.InsertarEmpleado
+create or alter procedure gestion_empleados.InsertarEmpleado
 @legajo int,
 @nombre varchar(40),
 @apellido varchar(30),
@@ -105,7 +105,7 @@ begin
 end
 GO
 
-create procedure gestion_empleados.ModificarEmpleado
+create or alter procedure gestion_empleados.ModificarEmpleado
 @legajo int,
 @nombre varchar(40) = NULL,
 @apellido varchar(30) = NULL,
@@ -136,7 +136,7 @@ begin
 end
 GO
 
-create procedure gestion_empleados.BorrarEmpleado
+create or alter procedure gestion_empleados.BorrarEmpleado
 @legajo int
 as
 begin
@@ -147,7 +147,7 @@ begin
 end
 GO
 
-create procedure gestion_sistema.InsertarMedio_de_Pago
+create or alter procedure gestion_sistema.InsertarMedio_de_Pago
 @nombre_ES varchar(20),
 @nombre_EN varchar(20)
 as
@@ -159,7 +159,7 @@ begin
 end
 GO
 
-create procedure gestion_sistema.ModificarMedio_de_Pago
+create or alter procedure gestion_sistema.ModificarMedio_de_Pago
 @ID_MP int,
 @nombre_ES varchar(20) = NULL,
 @nombre_EN varchar(20) = NULL,
@@ -175,7 +175,7 @@ begin
 end
 GO
 
-create procedure gestion_sistema.BorrarMedio_de_Pago
+create or alter procedure gestion_sistema.BorrarMedio_de_Pago
 @ID_MP int
 as
 begin
@@ -186,7 +186,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.InsertarLinea_Producto
+create or alter procedure gestion_productos.InsertarLinea_Producto
 @linea_prod varchar(35),
 @nombre_prod varchar(70)
 as
@@ -198,7 +198,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.ModificarLinea_Producto
+create or alter procedure gestion_productos.ModificarLinea_Producto
 @ID_lp int,
 @linea_prod varchar(35) = NULL,
 @nombre_prod varchar(70) = NULL
@@ -213,7 +213,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.BorrarLinea_Producto
+create or alter procedure gestion_productos.BorrarLinea_Producto
 @ID_lp int
 as
 begin
@@ -224,7 +224,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.InsertarProducto
+create or alter procedure gestion_productos.InsertarProducto
 @nombreProd varchar(70),
 @categoria varchar(20),
 @precio decimal(10,2),
@@ -240,7 +240,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.ModificarProducto
+create or alter procedure gestion_productos.ModificarProducto
 @ID_prod int,
 @nombreProd varchar(70) = NULL,
 @categoria varchar(20) = NULL,
@@ -263,7 +263,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.BorrarProducto
+create or alter procedure gestion_productos.BorrarProducto
 @ID_prod int
 as
 begin
@@ -274,7 +274,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.InsertarComprobante_venta
+create or alter procedure gestion_productos.InsertarComprobante_venta
 @ID_factura CHAR(11),
 @tipo_factura char(1),
 @ID_sucursal int,
@@ -293,7 +293,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.ModificarComprobante_venta
+create or alter procedure gestion_productos.ModificarComprobante_venta
 @ID_venta int,
 @ID_factura CHAR(11) = NULL,
 @tipo_factura char(1) = NULL,
@@ -322,7 +322,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.BorrarComprobante_venta
+create or alter procedure gestion_productos.BorrarComprobante_venta
 @ID_venta int
 as
 begin
@@ -333,7 +333,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.InsertarDetalle_venta
+create or alter procedure gestion_productos.InsertarDetalle_venta
 @ID_factura CHAR(11),
 @ID_prod int,
 @precio_unitario decimal(10,2),
@@ -347,7 +347,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.ModificarDetalle_venta
+create or alter procedure gestion_productos.ModificarDetalle_venta
 @ID_detalle_factura int,
 @ID_factura CHAR(11) = NULL,
 @ID_prod int = NULL,
@@ -366,7 +366,7 @@ begin
 end
 GO
 
-create procedure gestion_productos.BorrarDetalle_venta
+create or alter procedure gestion_productos.BorrarDetalle_venta
 @ID_detalle_factura int
 as
 begin
