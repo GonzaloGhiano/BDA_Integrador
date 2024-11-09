@@ -18,6 +18,8 @@ BEGIN
 END
 GO
 
+--drop database Com2900G02;
+
 USE Com2900G02;
 GO
 ---------------------------------------------------------------------------------------------
@@ -57,25 +59,24 @@ GO
 
 
 /*
-
-drop table gestion_productos.Venta;
-drop table gestion_productos.Producto;
-drop table gestion_productos.Linea_Producto;
-drop table gestion_sistema.Medio_de_Pago;
-drop table gestion_empleados.Empleado;
-drop table gestion_empleados.Cargo;
-drop table gestion_sistema.Sucursal;
+DROP TABLE gestion_ventas.Detalle_venta;
+DROP TABLE gestion_ventas.Comprobante_venta;
+DROP TABLE gestion_clientes.Cliente;
+DROP TABLE gestion_productos.Producto;
+DROP TABLE gestion_productos.Linea_Producto;
+DROP TABLE gestion_ventas.Medio_de_Pago;
+DROP TABLE gestion_tienda.Empleado;
+DROP TABLE gestion_tienda.Cargo;
+DROP TABLE gestion_tienda.Punto_de_venta;
+DROP TABLE gestion_tienda.Sucursal;
 
 drop schema gestion_empleados;
 drop schema reportes;
 drop schema gestion_productos;
 drop schema gestion_sistema;
-
 */
 
-/*
-	Verificar si no existe y crear la tabla sucursal.
-*/
+
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.Sucursal') 
 AND type in (N'U'))
@@ -87,9 +88,24 @@ BEGIN
 		direccion varchar(70) not null,
 		horario varchar(40) not null,
 		telefono int,
+		habilitado bit default 1,
 		constraint pk_sucursal primary key(ID_sucursal)
 	);
 END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.punto_de_venta') 
+AND type in (N'U'))
+BEGIN
+	CREATE TABLE gestion_tienda.punto_de_venta(
+		ID_punto_venta int primary key,
+		nro_caja int CHECK(nro_caja>0),
+		ID_sucursal int,
+		habilitado bit default 1,
+		CONSTRAINT fk_medio_pago foreign key(ID_sucursal) references gestion_tienda.Sucursal(ID_sucursal),
+		CONSTRAINT UNIQUE_cajaPorSucursal UNIQUE(nro_caja,ID_sucursal)
+	);
+END		
 GO
 
 -- ID para los sucursales? Y en que esquema queda mejor? uno nuevo?
@@ -190,7 +206,7 @@ AND type in (N'U'))
 BEGIN
 	CREATE TABLE gestion_productos.Producto(
 		ID_prod INT IDENTITY(1,1),
-		nombreProd varchar(70) not null,
+		nombre_Prod varchar(70) not null,
 		categoria varchar(20) not null,
 		precio decimal(10,2) check(precio>0) not null,
 		referencia_precio decimal(10,2) check(referencia_precio>0) null,
@@ -208,7 +224,7 @@ GO
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_clientes.cliente') 
 AND type in (N'U'))
 BEGIN
-	CREATE TABLE gestion_clientes.cliente(
+	CREATE TABLE gestion_clientes.Cliente(
 		ID_cliente INT IDENTITY(1,1) PRIMARY KEY,
 		num_documento char(8) not null,
 		tipo_documento char(3) not null,
@@ -226,6 +242,7 @@ BEGIN
 END
 GO
 
+
 /*
 	Verificar si no existe y crear la tabla sucursal.
 */
@@ -236,7 +253,7 @@ BEGIN
 		ID_venta INT IDENTITY(1,1) primary key,
 		ID_factura CHAR(11) not null UNIQUE,
 		tipo_factura char(1) not null,
-		ID_sucursal int not null,
+		ID_punto_venta int not null,
 		ID_cliente int null,
 		fecha DATE not null,
 		hora TIME not null,
@@ -252,7 +269,8 @@ BEGIN
 		CONSTRAINT fk_medio_pago foreign key(id_medio_pago) references gestion_ventas.Medio_de_Pago(ID_MP),
 		CONSTRAINT CHECK_tipo_factura CHECK(
 			tipo_factura in('A','B','C')),
-		CONSTRAINT fk_sucursal foreign key(ID_sucursal) references gestion_tienda.Sucursal(ID_sucursal)
+		CONSTRAINT fk_punt_venta foreign key(ID_punto_venta) references 
+		gestion_tienda.punto_de_venta(ID_punto_venta)
 	);
 END
 GO

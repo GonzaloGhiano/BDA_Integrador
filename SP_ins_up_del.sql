@@ -1,52 +1,117 @@
 USE Com2900G02
 GO
 
-create or alter procedure gestion_sistema.InsertarSucursal
+-------------------------------------------------------------------------------------
+-- CREACIÓN DE LOS SP DE SUCURSAL
+-------------------------------------------------------------------------------------
+
+CREATE or ALTER PROCEDURE datos_tienda.insertar_sucursal
 @nombre varchar(30),
 @ciudad varchar(30),
 @direccion varchar(70),
 @horario varchar(40),
-@telefono int = NULL
-as
-begin
-
-	insert into gestion_sistema.Sucursal (nombre_sucursal,ciudad,direccion,horario,telefono)
+@telefono int = null
+AS
+BEGIN
+	insert into gestion_tienda.Sucursal (nombre_sucursal,ciudad,direccion,horario,telefono)
 	values (@nombre,@ciudad,@direccion,@horario,@telefono)
-
-end
+END;
 GO
 
-create or alter procedure gestion_sistema.ModificarSucursal
+CREATE or ALTER PROCEDURE datos_tienda.actualizar_sucursal
 @ID_sucursal int,
 @nombre varchar(30) = NULL,
 @ciudad varchar(30) = NULL,
 @direccion varchar(70) = NULL,
 @horario varchar(40) = NULL,
 @telefono int = NULL
-as
-begin
-
-	update gestion_sistema.Sucursal
+AS
+BEGIN
+	update gestion_tienda.Sucursal
 	set	nombre_sucursal = isnull(@nombre,nombre_sucursal),
 		ciudad = isnull(@ciudad,ciudad),
 		direccion = isnull(@direccion,direccion),
 		horario = isnull(@horario, horario),
 		telefono = isnull(@telefono, telefono)
-	where ID_sucursal = @ID_sucursal
-
-end
+	where ID_sucursal = @ID_sucursal;
+END;
 GO
 
-create or alter procedure gestion_sistema.BorrarSucursal
+
+create or alter procedure datos_tienda.borrar_sucursal
 @ID_sucursal int
 as
 begin
-
-	delete from gestion_sistema.Sucursal
-	where ID_sucursal = @ID_sucursal
-
+	update gestion_tienda.Sucursal
+	set habilitado = 0;
 end
 GO
+
+create or alter procedure datos_tienda.reactivar_sucursal
+@ID_sucursal int
+as
+begin
+	update gestion_tienda.Sucursal
+	set habilitado = 1;
+end
+GO
+
+-------------------------------------------------------------------------------------
+-- CREACIÓN DE LOS SP DE PUNTO DE VENTA
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.punto_de_venta') 
+AND type in (N'U'))
+BEGIN
+	CREATE TABLE gestion_tienda.punto_de_venta(
+		ID_punto_venta int primary key,
+		nro_caja int CHECK(nro_caja>0),
+		ID_sucursal int,
+		habilitado bit default 1,
+		CONSTRAINT fk_medio_pago foreign key(ID_sucursal) references gestion_tienda.Sucursal(ID_sucursal),
+		CONSTRAINT UNIQUE_cajaPorSucursal UNIQUE(nro_caja,ID_sucursal)
+	);
+END		
+GO
+-------------------------------------------------------------------------------------
+
+CREATE or ALTER PROCEDURE datos_tienda.insertar_puntoDeVenta
+@ID_sucursal int,
+AS
+BEGIN
+	insert into gestion_tienda.Sucursal (nombre_sucursal,ciudad,direccion,horario,telefono)
+	values (@nombre,@ciudad,@direccion,@horario,@telefono)
+END;
+GO
+
+CREATE or ALTER PROCEDURE datos_tienda.actualizarSucursal
+@ID_sucursal int,
+@nombre varchar(30) = NULL,
+@ciudad varchar(30) = NULL,
+@direccion varchar(70) = NULL,
+@horario varchar(40) = NULL,
+@telefono int = NULL
+AS
+BEGIN
+	update gestion_tienda.Sucursal
+	set	nombre_sucursal = isnull(@nombre,nombre_sucursal),
+		ciudad = isnull(@ciudad,ciudad),
+		direccion = isnull(@direccion,direccion),
+		horario = isnull(@horario, horario),
+		telefono = isnull(@telefono, telefono)
+	where ID_sucursal = @ID_sucursal;
+END;
+GO
+
+
+create or alter procedure datos_tienda.BorrarSucursal
+@ID_sucursal int
+as
+begin
+	update gestion_tienda.Sucursal
+	set habilitado = 0;
+end
+GO
+
+
 
 
 create or alter procedure gestion_empleados.InsertarCargo
