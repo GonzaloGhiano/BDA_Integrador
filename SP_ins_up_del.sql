@@ -148,24 +148,29 @@ begin
 end
 GO
 
+-------------------------------------------------------------------------------------
+-- CREACIÓN DE LOS SP DE EMPLEADO
+-------------------------------------------------------------------------------------
 
-create or alter procedure gestion_empleados.InsertarEmpleado
+
+create or alter procedure gestion_tienda.InsertarEmpleado
 @legajo int,
 @nombre varchar(40),
 @apellido varchar(30),
-@DNI int,
+@num_documento int,
+@tipo_documento char(3),
 @direccion varchar(70),
 @email_personal varchar(70) = NULL,
-@email_empresarial varchar(70),
-@CUIL int,
-@cargo varchar(25),
-@sucursal_ID int,
+@email_empresarial varchar(70) = NULL,
+@CUIL char(13) = NULL,
+@cargo int,
+@sucursal_id int,
 @turno char(2) = 'NA'
 as
 begin
 
-	insert into gestion_empleados.Empleado(legajo,nombre,apellido,DNI,direccion,email_personal,email_empresarial,CUIL,cargo,sucursal_ID,turno)
-	values (@legajo,@nombre,@apellido,@DNI,@direccion,@email_personal,@email_empresarial,@CUIL,@cargo,@sucursal_ID,@turno)
+	insert into gestion_tienda.Empleado(legajo,nombre,apellido,num_documento,tipo_documento,direccion,email_personal,email_empresarial,CUIL,cargo,sucursal_id,turno)
+	values (@legajo,@nombre,@apellido,@num_documento,@tipo_documento,@direccion,@email_personal,@email_empresarial,@CUIL,@cargo,@sucursal_id,@turno)
 
 end
 GO
