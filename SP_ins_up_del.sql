@@ -74,45 +74,37 @@ GO
 -------------------------------------------------------------------------------------
 
 CREATE or ALTER PROCEDURE datos_tienda.insertar_puntoDeVenta
-@ID_sucursal int,
-AS
-BEGIN
-	insert into gestion_tienda.Sucursal (nombre_sucursal,ciudad,direccion,horario,telefono)
-	values (@nombre,@ciudad,@direccion,@horario,@telefono)
-END;
-GO
-
-CREATE or ALTER PROCEDURE datos_tienda.actualizarSucursal
-@ID_sucursal int,
-@nombre varchar(30) = NULL,
-@ciudad varchar(30) = NULL,
-@direccion varchar(70) = NULL,
-@horario varchar(40) = NULL,
-@telefono int = NULL
-AS
-BEGIN
-	update gestion_tienda.Sucursal
-	set	nombre_sucursal = isnull(@nombre,nombre_sucursal),
-		ciudad = isnull(@ciudad,ciudad),
-		direccion = isnull(@direccion,direccion),
-		horario = isnull(@horario, horario),
-		telefono = isnull(@telefono, telefono)
-	where ID_sucursal = @ID_sucursal;
-END;
-GO
-
-
-create or alter procedure datos_tienda.BorrarSucursal
+@nro_caja int,
 @ID_sucursal int
-as
-begin
-	update gestion_tienda.Sucursal
-	set habilitado = 0;
-end
+AS
+BEGIN
+	DECLARE @error varchar(max) = '';
+
+	-- Validar nro_caja
+	IF(@nro_caja <= 0)
+		SET @error = @error + 'La caja debe ser mayor a 0';
+
+	-- Validar sucursal
+	IF NOT EXISTS (SELECT 1 from gestion_tienda.Sucursal sucursal
+					WHERE sucursal.ID_sucursal = @ID_sucursal)
+		SET @error = @error + 'La sucursal no es valida';
+
+	IF(@error = '')
+	BEGIN
+		insert into gestion_tienda.punto_de_venta(nro_caja, ID_sucursal)
+		values (@nro_caja,@ID_sucursal)
+	END
+	ELSE
+	BEGIN
+		RAISERROR (@error, 16, 1);
+	END
+END;
 GO
 
 
 
+
+-------------------------------------------------------------------------------------------------
 
 create or alter procedure gestion_empleados.InsertarCargo
 @cargo varchar(25)
@@ -148,29 +140,24 @@ begin
 end
 GO
 
--------------------------------------------------------------------------------------
--- CREACIÓN DE LOS SP DE EMPLEADO
--------------------------------------------------------------------------------------
 
-
-create or alter procedure gestion_tienda.InsertarEmpleado
+create or alter procedure gestion_empleados.InsertarEmpleado
 @legajo int,
 @nombre varchar(40),
 @apellido varchar(30),
-@num_documento int,
-@tipo_documento char(3),
+@DNI int,
 @direccion varchar(70),
 @email_personal varchar(70) = NULL,
-@email_empresarial varchar(70) = NULL,
-@CUIL char(13) = NULL,
-@cargo int,
-@sucursal_id int,
+@email_empresarial varchar(70),
+@CUIL int,
+@cargo varchar(25),
+@sucursal_ID int,
 @turno char(2) = 'NA'
 as
 begin
 
-	insert into gestion_tienda.Empleado(legajo,nombre,apellido,num_documento,tipo_documento,direccion,email_personal,email_empresarial,CUIL,cargo,sucursal_id,turno)
-	values (@legajo,@nombre,@apellido,@num_documento,@tipo_documento,@direccion,@email_personal,@email_empresarial,@CUIL,@cargo,@sucursal_id,@turno)
+	insert into gestion_empleados.Empleado(legajo,nombre,apellido,DNI,direccion,email_personal,email_empresarial,CUIL,cargo,sucursal_ID,turno)
+	values (@legajo,@nombre,@apellido,@DNI,@direccion,@email_personal,@email_empresarial,@CUIL,@cargo,@sucursal_ID,@turno)
 
 end
 GO

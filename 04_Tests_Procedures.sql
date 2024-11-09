@@ -62,8 +62,20 @@ GO
 --					PRUEBAS UNITARIAS DE LA TABLA PUNTO DE VENTA
 -------------------------------------------------------------------------------------------------------------
 
+EXEC datos_tienda.insertar_puntoDeVenta
+@nro_caja = 1,
+@ID_sucursal = -421;
+GO
 
+-- Error esperado sucursal no válida
 
+EXEC datos_tienda.insertar_puntoDeVenta
+@nro_caja = 1,
+@ID_sucursal = 2;
+GO
+
+SELECT TOP 1 * FROM gestion_tienda.punto_de_venta;
+GO
 
 ----------------------------------------------------------------------
 --Prueba unitaria inserción de datos en tabla punto de venta
