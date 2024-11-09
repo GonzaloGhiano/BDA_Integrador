@@ -1,40 +1,86 @@
-CREATE DATABASE Com2900G02
-GO
-USE Com2900G02
-GO
-CREATE SCHEMA gestion_empleados;
-GO
-CREATE SCHEMA gestion_productos;
-GO
-CREATE SCHEMA reportes;
-GO
-CREATE SCHEMA gestion_sistema;
-GO
--- Esquema ventas para la tabla ventas?
-
 /*
+	Entrega 3. Grupo 02.
+	Alumnos: Ghiano Gonzalo Agustín, Felipe Morales, Javier Bastante
+	
+	Script correspondiente a la creación de la base de datos, de los esquemas y de las tablas
+	del sistema.
+*/
+/*
+	CRITERIO:
 	Esquemas en minuscula sin espacios
 	Tablas con primera letra en mayuscula y singular
 	Atributos en miniscula excepcion de ID, DNI, CUIL u otras siglas significativas
 */
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = N'Com2900G02')
+BEGIN
+	CREATE DATABASE Com2900G02
+	COLLATE Modern_Spanish_CI_AI;
+END
+GO
+
+USE Com2900G02;
+GO
+---------------------------------------------------------------------------------------------
+-- Se crean los esquemas del sistema
+---------------------------------------------------------------------------------------------
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'gestion_tienda')
+    exec('CREATE SCHEMA gestion_tienda');
+GO
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'datos_tienda')
+    exec('CREATE SCHEMA datos_tienda');
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'gestion_productos')
+    exec('CREATE SCHEMA gestion_productos');
+GO
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'datos_productos')
+    exec('CREATE SCHEMA datos_productos');
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'gestion_ventas')
+    exec('CREATE SCHEMA gestion_ventas');
+GO
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'datos_ventas')
+    exec('CREATE SCHEMA datos_ventas');
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'gestion_clientes')
+    exec('CREATE SCHEMA gestion_clientes');
+GO
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'datos_clientes')
+    exec('CREATE SCHEMA datos_clientes');
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'reportes')
+    exec('CREATE SCHEMA reportes');
+GO
+
 
 /*
+
+drop table gestion_productos.Venta;
+drop table gestion_productos.Producto;
+drop table gestion_productos.Linea_Producto;
+drop table gestion_sistema.Medio_de_Pago;
 drop table gestion_empleados.Empleado;
 drop table gestion_empleados.Cargo;
 drop table gestion_sistema.Sucursal;
-drop table gestion_sistema.Medio_de_Pago
-drop table gestion_productos.Linea_Producto
-drop table gestion_productos.Producto
-drop table gestion_productos.Venta
+
+drop schema gestion_empleados;
+drop schema reportes;
+drop schema gestion_productos;
+drop schema gestion_sistema;
+
 */
 
 /*
 	Verificar si no existe y crear la tabla sucursal.
 */
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_sistema.Sucursal') 
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.Sucursal') 
 AND type in (N'U'))
 BEGIN
-	CREATE TABLE gestion_sistema.Sucursal(
+	CREATE TABLE gestion_tienda.Sucursal(
 		ID_sucursal int IDENTITY(1,1),
 		nombre_sucursal varchar(30) not null,
 		ciudad varchar(30) not null,
@@ -52,11 +98,12 @@ GO
 /*
 	Verificar si no existe y crear la tabla sucursal.
 */
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_empleados.Cargo') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.Cargo') 
 AND type in (N'U'))
 BEGIN
-	CREATE TABLE gestion_empleados.Cargo(
-		cargo varchar(25) primary key
+	CREATE TABLE gestion_tienda.Cargo(
+		id_cargo int primary key,
+		cargo varchar(25)
 	);
 END
 GO
@@ -65,26 +112,35 @@ GO
 /*
 	Verificar si no existe y crear la tabla sucursal.
 */
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_empleados.Empleado') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.Empleado') 
 AND type in (N'U'))
 BEGIN
-	CREATE TABLE gestion_empleados.Empleado(
-		legajo int not null,
+	CREATE TABLE gestion_tienda.Empleado(
+		ID_empleado INT IDENTITY(1,1),
+		legajo char(6) unique not null,
 		nombre varchar(40) not null,
 		apellido varchar(30) not null,
-		DNI char(9) not null unique, --unique? sin tipo-dni no es seguro hacerlo
-		direccion varchar(70) not null,
-		email_personal varchar(60),
-		email_empresarial varchar(60) not null,
-		CUIL varchar(20) not null, --calcularlo????? vasrchar o int?
-		cargo varchar(25) not null,
-		sucursal_id int not null,
-		turno char(2) default 'NA', --no asignado
-		CONSTRAINT pk_empleados primary key(legajo),
-		CONSTRAINT fk_sucursal foreign key(sucursal_id) references gestion_sistema.Sucursal(ID_sucursal),
+		num_documento char(8) not null, --unique? sin tipo-dni no es seguro hacerlo
+		tipo_documento char(3) not null,
+		direccion varchar(80) not null,
+		email_personal varchar(80),
+		email_empresarial varchar(80),
+		CUIL char(13) not null, --calcularlo????? vasrchar o int?
+		cargo int,
+		sucursal_id int,
+		turno char(2) default 'NA', --No Asignado
+		habilitado bit default 1,
+
+		
+		CONSTRAINT pk_empleados primary key(ID_empleado),
+		CONSTRAINT fk_sucursal foreign key(sucursal_id) references gestion_tienda.Sucursal(ID_sucursal),
 		CONSTRAINT CHECK_turno CHECK(
 			turno in('TM','TT','TN','JC', 'NA')),
-		CONSTRAINT fk_cargo foreign key(cargo) references gestion_empleados.Cargo(cargo),
+		CONSTRAINT fk_cargo foreign key(cargo) references gestion_tienda.Cargo(id_cargo),
+		CONSTRAINT CHECK_legajo CHECK(legajo like '[0-9][0-9][0-9][0-9][0-9][0-9]'),
+		CONSTRAINT CHECK_CUIL CHECK(
+			legajo like '[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]'),
+		CONSTRAINT UNIQUE_TipoDoc_NumDoc UNIQUE (tipo_documento, num_documento)
 	);
 END
 GO
@@ -94,10 +150,10 @@ GO
 /*
 	Verificar si no existe y crear la tabla sucursal.
 */
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_sistema.Medio_de_Pago') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_ventas.Medio_de_Pago') 
 AND type in (N'U'))
 BEGIN
-	CREATE TABLE gestion_sistema.Medio_de_Pago(
+	CREATE TABLE gestion_ventas.Medio_de_Pago(
 		ID_MP INT IDENTITY(1,1) primary key,
 		nombre_ES varchar(20) not null unique,
 		nombre_EN varchar(20) not null unique, 
@@ -117,7 +173,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_p
 AND type in (N'U'))
 BEGIN
 	CREATE TABLE gestion_productos.Linea_Producto(
-		ID_lp INT identity(1,1) primary key,
+		ID_lineaprod INT identity(1,1) primary key,
 		linea_prod varchar(35) not null,
 		nombre_prod varchar(70) not null
 	);
@@ -140,43 +196,63 @@ BEGIN
 		referencia_precio decimal(10,2) check(referencia_precio>0) null,
 		reference_unit varchar(6) null, --variabilidad de 1 a 6, mayoria 2, que conviene?
 		cod_linea_prod int,
+		habilitado bit default 1,
+
 		CONSTRAINT pk_producto primary key(ID_prod),
-		CONSTRAINT fk_linea_prod foreign key(cod_linea_prod) references gestion_productos.Linea_Producto(ID_lp)
+		CONSTRAINT fk_linea_prod foreign key(cod_linea_prod) references gestion_productos.Linea_Producto(ID_lineaprod)
 	);
 END
 GO
 
 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_clientes.cliente') 
+AND type in (N'U'))
+BEGIN
+	CREATE TABLE gestion_clientes.cliente(
+		ID_cliente INT IDENTITY(1,1) PRIMARY KEY,
+		num_documento char(8) not null,
+		tipo_documento char(3) not null,
+		tipo_cliente char(6) not null,
+		habilitado bit default 1,
+		genero char(6),
+		CONSTRAINT UNIQUE_TipoDoc_NumDoc UNIQUE (tipo_documento, num_documento),
+		CONSTRAINT CHECK_tipoCliente CHECK(
+			tipo_cliente LIKE 'Member' or
+			tipo_cliente LIKE 'Normal'),
+		CONSTRAINT CHECK_genero CHECK(
+			genero LIKE 'Male' or
+			genero LIKE 'Female')
+	);
+END
+GO
+
 /*
 	Verificar si no existe y crear la tabla sucursal.
 */
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_productos.Comprobante_venta') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_ventas.Comprobante_venta') 
 AND type in (N'U'))
 BEGIN
-	CREATE TABLE gestion_productos.Comprobante_venta(
+	CREATE TABLE gestion_ventas.Comprobante_venta(
 		ID_venta INT IDENTITY(1,1) primary key,
 		ID_factura CHAR(11) not null UNIQUE,
 		tipo_factura char(1) not null,
 		ID_sucursal int not null,
-		tipo_cliente char(6),
-		genero char(6),
+		ID_cliente int null,
 		fecha DATE not null,
 		hora TIME not null,
 		id_medio_pago int not null,
-		empleado_legajo int not null,
+		ID_empleado int not null,
 		identificador_pago varchar(22) not null,
-		total decimal(10,2) CHECK(total>0),
-		CONSTRAINT fk_empleado foreign key(empleado_legajo) references gestion_empleados.Empleado(legajo),
-		CONSTRAINT fk_medio_pago foreign key(id_medio_pago) references gestion_sistema.Medio_de_Pago(ID_MP),
+		total_sinIVA decimal(10,2) CHECK(total_sinIVA>0) not null,
+		IVA decimal(10,2) CHECK(iva>0) not null,
+
+
+		CONSTRAINT fk_empleado foreign key(ID_empleado) references gestion_tienda.Empleado(ID_empleado),
+		CONSTRAINT fk_cliente foreign key(ID_cliente) references gestion_clientes.cliente(ID_cliente),
+		CONSTRAINT fk_medio_pago foreign key(id_medio_pago) references gestion_ventas.Medio_de_Pago(ID_MP),
 		CONSTRAINT CHECK_tipo_factura CHECK(
 			tipo_factura in('A','B','C')),
-		CONSTRAINT CHECK_genero CHECK(
-			genero LIKE 'Female' or
-			genero LIKE 'Male'),
-		CONSTRAINT CHECK_tipoCliente CHECK(
-			tipo_cliente LIKE 'Member' or
-			tipo_cliente LIKE 'Normal'),
-		CONSTRAINT fk_sucursal foreign key(ID_sucursal) references gestion_sistema.Sucursal(ID_sucursal)
+		CONSTRAINT fk_sucursal foreign key(ID_sucursal) references gestion_tienda.Sucursal(ID_sucursal)
 	);
 END
 GO
@@ -186,15 +262,16 @@ GO
 /*
 	Verificar si no existe y crear la tabla sucursal.
 */
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_productos.Detalle_venta') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_ventas.Detalle_venta') 
 AND type in (N'U'))
 BEGIN
-	CREATE TABLE gestion_productos.Detalle_venta(
-		ID_detalle_factura INT IDENTITY(1,1) primary key,
-		ID_factura CHAR(11) not null,
+	CREATE TABLE gestion_ventas.Detalle_venta(
+		ID_detalle_venta INT IDENTITY(1,1) primary key,
+		ID_venta int not null,
 		ID_prod int not null,
-		precio_unitario decimal(10,2) check(precio_unitario>0) not null,
+		subtotal decimal(10,2) check(subtotal>0) not null,
 		cantidad int not null check(cantidad>0),
+		CONSTRAINT fk_factura foreign key(ID_venta) references gestion_ventas.Comprobante_venta(ID_venta),
 		CONSTRAINT fk_producto foreign key(ID_prod) references gestion_productos.Producto(ID_prod),
 	);
 END
