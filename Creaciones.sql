@@ -98,7 +98,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_t
 AND type in (N'U'))
 BEGIN
 	CREATE TABLE gestion_tienda.punto_de_venta(
-		ID_punto_venta int primary key,
+		ID_punto_venta INT IDENTITY(1,1) primary key,
 		nro_caja int CHECK(nro_caja>0),
 		ID_sucursal int,
 		habilitado bit default 1,
@@ -155,7 +155,7 @@ BEGIN
 		CONSTRAINT fk_cargo foreign key(cargo) references gestion_tienda.Cargo(id_cargo),
 		CONSTRAINT CHECK_legajo CHECK(legajo like '[0-9][0-9][0-9][0-9][0-9][0-9]'),
 		CONSTRAINT CHECK_CUIL CHECK(
-			legajo like '[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]'),
+			CUIL like '[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]'),
 		CONSTRAINT UNIQUE_TipoDoc_NumDoc UNIQUE (tipo_documento, num_documento)
 	);
 END

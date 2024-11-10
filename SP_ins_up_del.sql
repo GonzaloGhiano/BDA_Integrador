@@ -58,6 +58,7 @@ GO
 
 -------------------------------------------------------------------------------------
 -- CREACIÓN DE LOS SP DE PUNTO DE VENTA
+/*
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.punto_de_venta') 
 AND type in (N'U'))
 BEGIN
@@ -71,48 +72,41 @@ BEGIN
 	);
 END		
 GO
+*/
 -------------------------------------------------------------------------------------
 
 CREATE or ALTER PROCEDURE datos_tienda.insertar_puntoDeVenta
-@ID_sucursal int,
-AS
-BEGIN
-	insert into gestion_tienda.Sucursal (nombre_sucursal,ciudad,direccion,horario,telefono)
-	values (@nombre,@ciudad,@direccion,@horario,@telefono)
-END;
-GO
-
-CREATE or ALTER PROCEDURE datos_tienda.actualizarSucursal
-@ID_sucursal int,
-@nombre varchar(30) = NULL,
-@ciudad varchar(30) = NULL,
-@direccion varchar(70) = NULL,
-@horario varchar(40) = NULL,
-@telefono int = NULL
-AS
-BEGIN
-	update gestion_tienda.Sucursal
-	set	nombre_sucursal = isnull(@nombre,nombre_sucursal),
-		ciudad = isnull(@ciudad,ciudad),
-		direccion = isnull(@direccion,direccion),
-		horario = isnull(@horario, horario),
-		telefono = isnull(@telefono, telefono)
-	where ID_sucursal = @ID_sucursal;
-END;
-GO
-
-
-create or alter procedure datos_tienda.BorrarSucursal
+@nro_caja int,
 @ID_sucursal int
-as
-begin
-	update gestion_tienda.Sucursal
-	set habilitado = 0;
-end
+AS
+BEGIN
+	DECLARE @error varchar(max) = '';
+
+	-- Validar nro_caja
+	IF(@nro_caja <= 0)
+		SET @error = @error + 'La caja debe ser mayor a 0';
+
+	-- Validar sucursal
+	IF NOT EXISTS (SELECT 1 from gestion_tienda.Sucursal sucursal
+					WHERE sucursal.ID_sucursal = @ID_sucursal)
+		SET @error = @error + 'La sucursal no es valida';
+
+	IF(@error = '')
+	BEGIN
+		insert into gestion_tienda.punto_de_venta(nro_caja, ID_sucursal)
+		values (@nro_caja,@ID_sucursal)
+	END
+	ELSE
+	BEGIN
+		RAISERROR (@error, 16, 1);
+	END
+END;
 GO
 
 
 
+/*
+-------------------------------------------------------------------------------------------------
 
 create or alter procedure gestion_empleados.InsertarCargo
 @cargo varchar(25)
@@ -441,3 +435,5 @@ begin
 
 end
 GO
+
+*/
