@@ -6,34 +6,33 @@ GO
 -------------------------------------------------------------------------------------
 
 CREATE or ALTER PROCEDURE datos_tienda.insertar_sucursal
-@nombre varchar(MAX),
-@ciudad varchar(MAX),
-@direccion varchar(MAX),
-@horario varchar(MAX),
+@nombre varchar(MAX) = null,
+@ciudad varchar(MAX) = null,
+@direccion varchar(MAX) = null,
+@horario varchar(MAX) = null,
 @telefono int = null
 AS
 BEGIN
 	DECLARE @error varchar(max) = '';
 
 	--Validar nombre de la sucursal
-	IF(COALESCE(@nombre, '') = '') --Si vino vacio, es error. Si vino null, lo hago vacio y es error.
+	IF(ISNULL(@nombre, '') = '') --Si vino vacio, es error. Si vino null, lo hago vacio y es error. 
 		SET @error = @error + 'ERROR: El nombre de la sucursal no puede ser vacio.'
 	ELSE IF(LEN(@nombre)>30)
 		SET @error = @error + 'Nombre demasiado largo. Longitud maxima de 30 caracteres'
 
-
 	--Validar ciudad
-	IF(COALESCE(@ciudad, '') = '')
+	IF(ISNULL(@ciudad, '') = '')
 		SET @error = @error + 'ERROR: La ciudad de la sucursal no puede ser vacio'
 	ELSE IF(LEN(@ciudad)>30)
 		SET @error = @error + 'Longitud de ciudad ingresada demasiado largo. Longitud maxima de 30 caracteres'
 
 	--Validar direccion
-	IF(COALESCE(@direccion, '') = '')
+	IF(ISNULL(@direccion, '') = '')
 		SET @error = @error + 'ERROR: La direccion de la sucursal no puede ser vacio.'
 
 	--Validar horario
-	IF(COALESCE(@horario, '') = '')
+	IF(ISNULL(@horario, '') = '')
 		SET @error = @error + 'ERROR: El horario de la sucursal no puede ser vacio.'
 	
 	IF(@error = '')
@@ -57,13 +56,42 @@ CREATE or ALTER PROCEDURE datos_tienda.actualizar_sucursal
 @telefono int = NULL
 AS
 BEGIN
-	update gestion_tienda.Sucursal
-	set	nombre_sucursal = isnull(@nombre,nombre_sucursal),
-		ciudad = isnull(@ciudad,ciudad),
-		direccion = isnull(@direccion,direccion),
-		horario = isnull(@horario, horario),
-		telefono = isnull(@telefono, telefono)
-	where ID_sucursal = @ID_sucursal;
+	DECLARE @error varchar(max) = '';
+
+	--Validar nombre de la sucursal
+	IF(@nombre = '') --Si vino vacio, es error. Si vino null, lo hago vacio y es error. 
+		SET @error = @error + 'ERROR: El nombre de la sucursal no puede ser vacio.'
+	ELSE IF(LEN(@nombre)>30)
+		SET @error = @error + 'Nombre demasiado largo. Longitud maxima de 30 caracteres'
+
+	--Validar ciudad
+	IF(@ciudad = '')
+		SET @error = @error + 'ERROR: La ciudad de la sucursal no puede ser vacio'
+	ELSE IF(LEN(@ciudad)>30)
+		SET @error = @error + 'Longitud de ciudad ingresada demasiado largo. Longitud maxima de 30 caracteres'
+
+	--Validar direccion
+	IF(@direccion = '')
+		SET @error = @error + 'ERROR: La direccion de la sucursal no puede ser vacio.'
+
+	--Validar horario
+	IF(@horario = '')
+		SET @error = @error + 'ERROR: El horario de la sucursal no puede ser vacio.'
+	
+	IF(@error = '')
+	BEGIN
+		update gestion_tienda.Sucursal
+		set	nombre_sucursal = isnull(@nombre,nombre_sucursal),
+			ciudad = isnull(@ciudad,ciudad),
+			direccion = isnull(@direccion,direccion),
+			horario = isnull(@horario, horario),
+			telefono = isnull(@telefono, telefono)
+		where ID_sucursal = @ID_sucursal;
+	END
+	ELSE
+	BEGIN
+		RAISERROR (@error, 16, 1);
+	END
 END;
 GO
 
@@ -72,18 +100,31 @@ create or alter procedure datos_tienda.borrar_sucursal
 @ID_sucursal int
 as
 begin
-	update gestion_tienda.Sucursal
-	set habilitado = 0;
-end
+	IF NOT EXISTS(Select 1 from gestion_tienda.Sucursal sucursal
+				where sucursal.ID_sucursal = @ID_sucursal)
+		  RAISERROR('La sucursal %d no existe', 16, 1, @ID_sucursal);
+	ELSE
+	BEGIN
+		update gestion_tienda.Sucursal
+		set habilitado = 0;
+	END
+END
 GO
+
 
 create or alter procedure datos_tienda.reactivar_sucursal
 @ID_sucursal int
 as
 begin
-	update gestion_tienda.Sucursal
-	set habilitado = 1;
-end
+	IF NOT EXISTS(Select 1 from gestion_tienda.Sucursal sucursal
+				where sucursal.ID_sucursal = @ID_sucursal)
+		  RAISERROR('La sucursal %d no existe', 16, 1, @ID_sucursal);
+	ELSE
+	BEGIN
+		update gestion_tienda.Sucursal
+		set habilitado = 1;
+	END
+END
 GO
 
 

@@ -46,6 +46,32 @@ EXEC datos_tienda.insertar_sucursal
 GO
 --Error esperado: "ERROR: El nombre de la sucursal no puede ser vacio."
 
+EXEC datos_tienda.insertar_sucursal
+@nombre = null, 
+@ciudad = 'Buenos Aires', 
+@direccion = 'Av. Siempre Viva 123', 
+@horario = '9:00 AM - 6:00 PM', 
+@telefono = 123456789;
+GO
+--Error esperado: "ERROR: El nombre de la sucursal no puede ser vacio."
+
+EXEC datos_tienda.insertar_sucursal
+@nombre = 'Sucursal Devoto', 
+@ciudad = '', 
+@direccion = 'Av. Siempre Viva 12233', 
+@horario = '9:00 AM - 6:00 PM', 
+@telefono = 122456789;
+GO
+--Error esperado: "ERROR: La ciudad de la sucursal no puede ser vacio"
+
+EXEC datos_tienda.insertar_sucursal
+@nombre = 'Sucursal Devoto', 
+-- sin ciudad
+@direccion = 'Av. Siempre Viva 12233', 
+@horario = '9:00 AM - 6:00 PM', 
+@telefono = 122456789;
+GO
+--Error esperado: "ERROR: La ciudad de la sucursal no puede ser vacio"
 
 ----------------------------------------------------------------------
 --Prueba unitaria actualización de datos de sucursal
@@ -57,6 +83,15 @@ EXEC datos_tienda.actualizar_sucursal
 @telefono = 123;
 GO
 
+SELECT TOP 3 * FROM gestion_tienda.Sucursal;
+GO
+
+EXEC datos_tienda.actualizar_sucursal
+@ID_sucursal = 1,
+@nombre = '',
+@telefono = 123;
+GO
+--Error esperado: "ERROR: El nombre de la sucursal no puede ser vacio."
 SELECT TOP 3 * FROM gestion_tienda.Sucursal;
 GO
 
@@ -77,6 +112,18 @@ GO
 
 SELECT TOP 3 * FROM gestion_tienda.Sucursal;
 GO
+
+EXEC datos_tienda.borrar_sucursal
+@ID_sucursal = -13213;
+GO
+--Error esperado: "La sucursal -13213 no existe"
+
+
+EXEC datos_tienda.reactivar_sucursal
+@ID_sucursal = -13213;
+GO
+--Error esperado: "La sucursal -13213 no existe"
+
 
 
 -------------------------------------------------------------------------------------------------------------
@@ -199,3 +246,4 @@ GO
 SELECT * FROM gestion_tienda.punto_de_venta pv
 where pv.ID_punto_venta = 2;
 GO
+

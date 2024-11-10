@@ -137,7 +137,7 @@ BEGIN
 		nombre varchar(40) not null,
 		apellido varchar(30) not null,
 		num_documento char(8) not null, --unique? sin tipo-dni no es seguro hacerlo
-		tipo_documento char(3) not null,
+		tipo_documento char(2) not null,
 		direccion varchar(80) not null,
 		email_personal varchar(80),
 		email_empresarial varchar(80),
@@ -226,7 +226,7 @@ BEGIN
 	CREATE TABLE gestion_clientes.Cliente(
 		ID_cliente INT IDENTITY(1,1) PRIMARY KEY,
 		num_documento char(8) not null,
-		tipo_documento char(3) not null,
+		tipo_documento char(2) not null,
 		tipo_cliente char(6) not null,
 		habilitado bit default 1,
 		genero char(6),
@@ -259,9 +259,10 @@ BEGIN
 		id_medio_pago int not null,
 		ID_empleado int not null,
 		identificador_pago varchar(22),
+		factura_pagada bit default 0,
 		total_sinIVA decimal(10,2) CHECK(total_sinIVA>0) not null,
 		IVA decimal(10,2) CHECK(iva>0) not null,
-		factura_pagada bit default 0,
+
 
 		CONSTRAINT fk_empleado foreign key(ID_empleado) references gestion_tienda.Empleado(ID_empleado),
 		CONSTRAINT fk_cliente foreign key(ID_cliente) references gestion_clientes.cliente(ID_cliente),
