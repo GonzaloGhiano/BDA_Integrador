@@ -24,7 +24,7 @@ BEGIN
 	
 	--Validar num_Documento
 	IF(gestion_tienda.validar_num_documento(@num_documento) = 0)
-		SET @error = @error + 'ERROR: El numero de documento invalido';
+		SET @error = @error + 'ERROR: Numero de documento invalido';
 	
 	--Validar Tipo_Doc
 	IF(gestion_tienda.validar_tipo_documento(@tipo_documento) = 0)
@@ -79,13 +79,13 @@ begin
 					WHERE ID_empleado = @ID_empleado)
 		SET @error = @error + 'ID de empleado inexistente';
 
-	--Validar numero de documento
-	IF(@num_documento IS NOT NULL AND @num_documento NOT LIKE('[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))
-		SET @error = @error + 'ERROR: El numero de documento no es valido'
+	--Validar num_Documento
+	IF(@num_documento is not null and gestion_tienda.validar_num_documento(@num_documento) = 0)
+		SET @error = @error + 'ERROR: Numero de documento invalido';
 
-	-- Validar tipo documento
-	IF(@tipo_documento IS NOT NULL AND @tipo_documento NOT IN('DU','LE','LC','CI'))
-			SET @error = @error + 'ERROR: El tipo de documento no es valido'
+	--Validar Tipo_Doc
+	IF(@tipo_documento is not null and gestion_tienda.validar_tipo_documento(@tipo_documento) = 0)
+		SET @error = @error + 'ERROR: Tipo de documento invalido'
 
 	-- Validar formato legajo
 	IF(@legajo is not null and @legajo not like('[0-9][0-9][0-9][0-9][0-9][0-9]'))

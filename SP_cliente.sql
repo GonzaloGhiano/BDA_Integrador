@@ -3,21 +3,21 @@ GO
 
 create or alter procedure datos_clientes.insertar_cliente
 @num_documento char(8),
-@tipo_documento char(3),
+@tipo_documento char(2),
 @tipo_cliente char(6),
-@genero char(6)
+@genero char(6) = NULL
 AS
 BEGIN
 
 	DECLARE @error varchar(max) = '';
 
-	-- Validar formato documento
-	IF(@num_documento not like('[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))
-		SET @error = @error + 'Formato invalido de documento';
+	--Validar num_Documento
+	IF(gestion_tienda.validar_num_documento(@num_documento) = 0)
+		SET @error = @error + 'ERROR: Numero de documento invalido';
 
-	-- Validar tipo documento
-	IF(@tipo_documento not like('[A-Z][A-Z][A-Z]'))
-		SET @error = @error + 'Tipo documento no válido';
+	--Validar Tipo_Doc
+	IF(gestion_tienda.validar_tipo_documento(@tipo_documento) = 0)
+		SET @error = @error + 'ERROR: Tipo de documento invalido'
 
 	IF(@error = '')
 	BEGIN
@@ -32,11 +32,12 @@ BEGIN
 	END
 
 END
+GO
 
 create or alter procedure datos_clientes.modificar_cliente
 @ID_cliente int,
 @num_documento char(8) = NULL,
-@tipo_documento char(3) = NULL,
+@tipo_documento char(2) = NULL,
 @tipo_cliente char(6) = NULL,
 @genero char(6) = NULL
 AS
@@ -49,13 +50,13 @@ BEGIN
 					WHERE ID_cliente = @ID_cliente)
 		SET @error = @error + 'ID de empleado inexistente';
 
-	-- Validar formato documento
-	IF(@num_documento is not null and @num_documento not like('[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))
-		SET @error = @error + 'Formato invalido de documento';
+	--Validar num_Documento
+	IF(@num_documento is not null and gestion_tienda.validar_num_documento(@num_documento) = 0)
+		SET @error = @error + 'ERROR: Numero de documento invalido';
 
-	-- Validar tipo documento
-	IF(@tipo_documento is not null and @tipo_documento not like('[A-Z][A-Z][A-Z]'))
-		SET @error = @error + 'Tipo documento no válido';
+	--Validar Tipo_Doc
+	IF(@tipo_documento is not null and gestion_tienda.validar_tipo_documento(@tipo_documento) = 0)
+		SET @error = @error + 'ERROR: Tipo de documento invalido'
 
 	IF(@error = '')
 	BEGIN
@@ -74,6 +75,7 @@ BEGIN
 	END
 
 END
+GO
 
 create or alter procedure datos_clientes.borrar_cliente
 @ID_cliente int
@@ -101,6 +103,7 @@ BEGIN
 	END
 
 END
+GO
 
 create or alter procedure datos_clientes.reactivar_cliente
 @ID_cliente int
@@ -128,3 +131,4 @@ BEGIN
 	END
 
 END
+GO
