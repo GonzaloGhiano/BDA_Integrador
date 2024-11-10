@@ -210,7 +210,7 @@ BEGIN
 		categoria varchar(20) not null,
 		precio decimal(10,2) check(precio>0) not null,
 		referencia_precio decimal(10,2) check(referencia_precio>0) null,
-		reference_unit varchar(6) null, --variabilidad de 1 a 6, mayoria 2, que conviene?
+		referencia_unidad varchar(6) null, --variabilidad de 1 a 6, mayoria 2, que conviene?
 		cod_linea_prod int,
 		habilitado bit default 1,
 
