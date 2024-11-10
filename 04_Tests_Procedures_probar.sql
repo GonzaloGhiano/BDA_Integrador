@@ -1,6 +1,5 @@
 USE Com2900G02
 GO
-
 ----------------------------------------------------------------------
 --TEST
 ----------------------------------------------------------------------
@@ -8,49 +7,81 @@ GO
 ----------------------------------------------------------------------
 --Prueba unitaria inserción de datos en tabla medios de pago
 ----------------------------------------------------------------------
-EXEC gestion_ventas.InsertarMedio_de_Pago
-@nombre_ES = 'Tarjeta de debito2',
-@nombre_EN = 'Debit card1'
+EXEC datos_ventas.insertar_medioDePago
+@nombre_ES = 'Tarjeta de debito VISA',
+@nombre_EN = 'Debit card VISA'
 GO
 
 select * from gestion_ventas.Medio_de_Pago
 
+EXEC datos_ventas.insertar_medioDePago
+@nombre_ES = 'Tarjeta de debito VISA',
+@nombre_EN = 'VISA'
+GO
+--Error esperado: "Nombre en español repetido"
+
+EXEC datos_ventas.insertar_medioDePago
+@nombre_ES = 'VISA',
+@nombre_EN = 'Debit card VISA'
+GO
+--Error esperado: "Nombre en ingles repetido"
+
 ----------------------------------------------------------------------
 --Prueba unitaria inserción de actualización de datos de la tabla medios de pago
 ----------------------------------------------------------------------
-EXEC gestion_ventas.Modificar_medio_de_pago
-@ID_MP = 2,
+EXEC datos_ventas.modificar_medioDePago
+@ID_MP = -2,
 @nombre_ES = 'Billete',
 @nombre_EN = 'Money'
 GO
 
-SELECT TOP 1 * FROM gestion_ventas.Medio_de_Pago;
+--Error esperado: "ID_MP NO ENCONTRADO"
+
+EXEC datos_ventas.modificar_medioDePago
+@ID_MP = 1,
+@nombre_ES = 'Billete',
+@nombre_EN = 'Money'
+GO
+
+EXEC datos_ventas.modificar_medioDePago
+@ID_MP = 1,
+@nombre_ES = 'Billete'
+GO
+
+SELECT TOP 3 * FROM gestion_ventas.Medio_de_Pago;
 GO
 
 ----------------------------------------------------------------------
 --Prueba unitaria de eliminación de datos en tabla medios de pago
 ----------------------------------------------------------------------
-EXEC gestion_ventas.borrar_medio_de_pago 
-@ID_MP = 2
+SELECT TOP 3 * FROM gestion_ventas.Medio_de_Pago;
+
+EXEC datos_ventas.borrar_medioDePago
+@ID_MP = 1
 GO
 
-SELECT TOP 1 * FROM gestion_ventas.Medio_de_Pago;
+SELECT TOP 3 * FROM gestion_ventas.Medio_de_Pago;
 GO
 
--
+EXEC datos_ventas.reactivar_medioDePago
+@ID_MP = 1
+GO
+SELECT TOP 3 * FROM gestion_ventas.Medio_de_Pago;
+GO
+
 ----------------------------------------------------------------------
 --Prueba unitaria inserción de datos en tabla Linea Producto
 ----------------------------------------------------------------------
-EXEC gestion_productos.InsertarLinea_Producto
+EXEC datos_productos.insertar_lineaProducto
 @linea_prod = 'Muy Congelados'
 GO
 
 select top 1 * from gestion_productos.Linea_Producto
 
 ----------------------------------------------------------------------
---Prueba unitaria inserción de actualización de datos de la tabla Linea Producto
+--Prueba unitaria actualización de datos de la tabla Linea Producto
 ----------------------------------------------------------------------
-EXEC gestion_productos.ModificarLinea_Producto
+EXEC datos_productos.modificar_lineaProducto
 @ID_lineaprod = 1,
 @linea_prod = 'Super Congelados'
 GO
@@ -61,10 +92,29 @@ GO
 ----------------------------------------------------------------------
 --Prueba unitaria de eliminación de datos en tabla Linea Producto
 ----------------------------------------------------------------------
-EXEC gestion_productos.BorrarLinea_Producto
+EXEC datos_productos.borrar_lineaProducto
 @ID_lineaprod = 1
 GO
 
 SELECT TOP 1 * FROM gestion_productos.Linea_Producto;
 GO
+
+EXEC datos_productos.reactivar_lineaProducto
+@ID_lineaprod = 1
+GO
+
+SELECT TOP 1 * FROM gestion_productos.Linea_Producto;
+GO
+
+EXEC datos_productos.borrar_lineaProducto
+@ID_lineaprod = -1
+GO
+
+--Error esperado: "ID de Linea de Producto inexistente"
+
+EXEC datos_productos.reactivar_lineaProducto
+@ID_lineaprod = -1
+GO
+
+-- Error esperado: "ID de Linea de Producto inexistente"
 
