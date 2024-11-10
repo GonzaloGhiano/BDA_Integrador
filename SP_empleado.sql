@@ -23,16 +23,12 @@ BEGIN
 		SET @error = @error + 'ERROR: El CUIL no puede ser vacio'
 	
 	--Validar num_Documento
-	IF(ISNULL(@num_documento, '') = '')
-		SET @error = @error + 'ERROR: El numero de documento no puede ser vacio'
-	ELSE IF(@num_documento NOT LIKE('[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'))
-		SET @error = @error + 'ERROR: El numero de documento no es valido'
+	IF(gestion_tienda.validar_num_documento(@num_documento) = 0)
+		SET @error = @error + 'ERROR: El numero de documento invalido';
 	
 	--Validar Tipo_Doc
-	IF(ISNULL(@tipo_documento, '') = '')
+	IF(gestion_tienda.validar_tipo_documento(@tipo_documento) = 0)
 		SET @error = @error + 'ERROR: El tipo de documento no puede ser vacio'
-	ELSE IF(@tipo_documento NOT IN('DU','LE','LC','CI'))
-			SET @error = @error + 'ERROR: El tipo de documento no es valido'
 
 	-- Validar formato legajo
 	IF(ISNULL(@legajo, '') = '')
