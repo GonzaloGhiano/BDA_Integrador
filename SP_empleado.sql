@@ -5,14 +5,14 @@ create or alter procedure datos_tienda.insertar_empleado
 @legajo char(6),
 @nombre varchar(40),
 @apellido varchar(30),
-@num_documento char(8),
-@tipo_documento char(2),
+@num_documento char(8) = NULL,
+@tipo_documento char(2) = NULL,
 @direccion varchar(80),
 @email_personal varchar(80) = NULL,
 @email_empresarial varchar(80),
 @CUIL char(13),
-@cargo int,
-@sucursal_id int,
+@cargo int = NULL,
+@sucursal_id int = NULL,
 @turno char(2) = 'NA'
 AS
 BEGIN
@@ -28,7 +28,7 @@ BEGIN
 	
 	--Validar Tipo_Doc
 	IF(gestion_tienda.validar_tipo_documento(@tipo_documento) = 0)
-		SET @error = @error + 'ERROR: El tipo de documento no puede ser vacio'
+		SET @error = @error + 'ERROR: Tipo de documento invalido'
 
 	-- Validar formato legajo
 	IF(ISNULL(@legajo, '') = '')
@@ -107,7 +107,7 @@ begin
 			cargo = isnull(@cargo,cargo),
 			sucursal_id = isnull(@sucursal_id,sucursal_id),
 			turno = isnull(@turno,turno)
-		where legajo = @legajo
+		where ID_empleado = @ID_empleado
 
 	END
 	ELSE
