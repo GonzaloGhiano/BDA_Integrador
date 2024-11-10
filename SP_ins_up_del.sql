@@ -6,24 +6,54 @@ GO
 -------------------------------------------------------------------------------------
 
 CREATE or ALTER PROCEDURE datos_tienda.insertar_sucursal
-@nombre varchar(30),
-@ciudad varchar(30),
-@direccion varchar(70),
-@horario varchar(40),
+@nombre varchar(MAX),
+@ciudad varchar(MAX),
+@direccion varchar(MAX),
+@horario varchar(MAX),
 @telefono int = null
 AS
 BEGIN
-	insert into gestion_tienda.Sucursal (nombre_sucursal,ciudad,direccion,horario,telefono)
-	values (@nombre,@ciudad,@direccion,@horario,@telefono)
+	DECLARE @error varchar(max) = '';
+
+	--Validar nombre de la sucursal
+	IF(COALESCE(@nombre, '') = '') --Si vino vacio, es error. Si vino null, lo hago vacio y es error.
+		SET @error = @error + 'ERROR: El nombre de la sucursal no puede ser vacio.'
+	ELSE IF(LEN(@nombre)>30)
+		SET @error = @error + 'Nombre demasiado largo. Longitud maxima de 30 caracteres'
+
+
+	--Validar ciudad
+	IF(COALESCE(@ciudad, '') = '')
+		SET @error = @error + 'ERROR: La ciudad de la sucursal no puede ser vacio'
+	ELSE IF(LEN(@ciudad)>30)
+		SET @error = @error + 'Longitud de ciudad ingresada demasiado largo. Longitud maxima de 30 caracteres'
+
+	--Validar direccion
+	IF(COALESCE(@direccion, '') = '')
+		SET @error = @error + 'ERROR: La direccion de la sucursal no puede ser vacio.'
+
+	--Validar horario
+	IF(COALESCE(@horario, '') = '')
+		SET @error = @error + 'ERROR: El horario de la sucursal no puede ser vacio.'
+	
+	IF(@error = '')
+	BEGIN
+		insert into gestion_tienda.Sucursal (nombre_sucursal,ciudad,direccion,horario,telefono)
+		values (@nombre,@ciudad,@direccion,@horario,@telefono)
+	END
+	ELSE
+	BEGIN
+		RAISERROR (@error, 16, 1);
+	END
 END;
 GO
 
 CREATE or ALTER PROCEDURE datos_tienda.actualizar_sucursal
 @ID_sucursal int,
-@nombre varchar(30) = NULL,
-@ciudad varchar(30) = NULL,
-@direccion varchar(70) = NULL,
-@horario varchar(40) = NULL,
+@nombre varchar(MAX) = NULL,
+@ciudad varchar(MAX) = NULL,
+@direccion varchar(MAX) = NULL,
+@horario varchar(MAX) = NULL,
 @telefono int = NULL
 AS
 BEGIN
@@ -55,54 +85,6 @@ begin
 	set habilitado = 1;
 end
 GO
-
--------------------------------------------------------------------------------------
--- CREACIÓN DE LOS SP DE PUNTO DE VENTA
-/*
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.punto_de_venta') 
-AND type in (N'U'))
-BEGIN
-	CREATE TABLE gestion_tienda.punto_de_venta(
-		ID_punto_venta int primary key,
-		nro_caja int CHECK(nro_caja>0),
-		ID_sucursal int,
-		habilitado bit default 1,
-		CONSTRAINT fk_medio_pago foreign key(ID_sucursal) references gestion_tienda.Sucursal(ID_sucursal),
-		CONSTRAINT UNIQUE_cajaPorSucursal UNIQUE(nro_caja,ID_sucursal)
-	);
-END		
-GO
-*/
--------------------------------------------------------------------------------------
-
-CREATE or ALTER PROCEDURE datos_tienda.insertar_puntoDeVenta
-@nro_caja int,
-@ID_sucursal int
-AS
-BEGIN
-	DECLARE @error varchar(max) = '';
-
-	-- Validar nro_caja
-	IF(@nro_caja <= 0)
-		SET @error = @error + 'La caja debe ser mayor a 0';
-
-	-- Validar sucursal
-	IF NOT EXISTS (SELECT 1 from gestion_tienda.Sucursal sucursal
-					WHERE sucursal.ID_sucursal = @ID_sucursal)
-		SET @error = @error + 'La sucursal no es valida';
-
-	IF(@error = '')
-	BEGIN
-		insert into gestion_tienda.punto_de_venta(nro_caja, ID_sucursal)
-		values (@nro_caja,@ID_sucursal)
-	END
-	ELSE
-	BEGIN
-		RAISERROR (@error, 16, 1);
-	END
-END;
-GO
-
 
 
 /*
