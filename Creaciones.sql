@@ -258,10 +258,10 @@ BEGIN
 		hora TIME not null,
 		id_medio_pago int not null,
 		ID_empleado int not null,
-		identificador_pago varchar(22) not null,
+		identificador_pago varchar(22),
 		total_sinIVA decimal(10,2) CHECK(total_sinIVA>0) not null,
 		IVA decimal(10,2) CHECK(iva>0) not null,
-
+		factura_pagada bit default 0,
 
 		CONSTRAINT fk_empleado foreign key(ID_empleado) references gestion_tienda.Empleado(ID_empleado),
 		CONSTRAINT fk_cliente foreign key(ID_cliente) references gestion_clientes.cliente(ID_cliente),
