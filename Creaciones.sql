@@ -191,6 +191,7 @@ BEGIN
 	CREATE TABLE gestion_productos.Linea_Producto(
 		ID_lineaprod INT identity(1,1) primary key,
 		linea_prod varchar(35) not null,
+		habilitado bit default 1
 	);
 END
 GO
