@@ -71,7 +71,7 @@ GO
 
 EXEC datos_tienda.insertar_puntoDeVenta
 @nro_caja = 1,
-@ID_sucursal = 2;
+@ID_sucursal = 1;
 GO
 
 SELECT TOP 1 * FROM gestion_tienda.punto_de_venta;

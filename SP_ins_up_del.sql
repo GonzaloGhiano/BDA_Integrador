@@ -58,6 +58,7 @@ GO
 
 -------------------------------------------------------------------------------------
 -- CREACIÓN DE LOS SP DE PUNTO DE VENTA
+/*
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.punto_de_venta') 
 AND type in (N'U'))
 BEGIN
@@ -71,6 +72,7 @@ BEGIN
 	);
 END		
 GO
+*/
 -------------------------------------------------------------------------------------
 
 CREATE or ALTER PROCEDURE datos_tienda.insertar_puntoDeVenta
@@ -103,7 +105,7 @@ GO
 
 
 
-
+/*
 -------------------------------------------------------------------------------------------------
 
 create or alter procedure gestion_empleados.InsertarCargo
@@ -433,3 +435,5 @@ begin
 
 end
 GO
+
+*/

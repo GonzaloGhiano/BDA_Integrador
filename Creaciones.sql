@@ -98,7 +98,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_t
 AND type in (N'U'))
 BEGIN
 	CREATE TABLE gestion_tienda.punto_de_venta(
-		ID_punto_venta int primary key,
+		ID_punto_venta INT IDENTITY(1,1) primary key,
 		nro_caja int CHECK(nro_caja>0),
 		ID_sucursal int,
 		habilitado bit default 1,
