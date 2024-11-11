@@ -1,27 +1,6 @@
 USE Com2900G02;
 GO
 
-/*
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_productos.Producto') 
-AND type in (N'U'))
-BEGIN
-	CREATE TABLE gestion_productos.Producto(
-		ID_prod INT IDENTITY(1,1),
-		nombre_Prod varchar(70) not null,
-		categoria varchar(20) not null,
-		precio decimal(10,2) check(precio>0) not null,
-		referencia_precio decimal(10,2) check(referencia_precio>0) null,
-		reference_unit varchar(6) null, --variabilidad de 1 a 6, mayoria 2, que conviene?
-		cod_linea_prod int,
-		habilitado bit default 1,
-
-		CONSTRAINT pk_producto primary key(ID_prod),
-		CONSTRAINT fk_linea_prod foreign key(cod_linea_prod) references gestion_productos.Linea_Producto(ID_lineaprod)
-	);
-END
-GO
-*/
-
 CREATE OR ALTER PROCEDURE datos_productos.insertar_producto
 @nombre_Prod varchar(70) = null,
 @categoria varchar(20) = null,
