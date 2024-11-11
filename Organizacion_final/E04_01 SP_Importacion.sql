@@ -2,12 +2,13 @@ USE Com2900G02;
 GO
 
 
-DECLARE @ruta_comp varchar(max) = 'D:\Universidad\BDD Aplicada\TP integrador archivos\TP_integrador_Archivos\informacion_complementaria.xlsx',
-	@ruta_catalogo varchar(max) = 'D:\Universidad\BDD Aplicada\TP integrador archivos\TP_integrador_archivos\Productos\catalogo.csv',
-	@ruta_electronicos varchar(max) = 'D:\Universidad\BDD Aplicada\TP integrador archivos\TP_integrador_Archivos\Productos\Electronic accessories.xlsx',
-	@ruta_importados varchar(max) = 'D:\Universidad\BDD Aplicada\TP integrador archivos\TP_integrador_Archivos\Productos\Productos_importados.xlsx',
-	@ruta_ventas varchar(max) ='D:\Universidad\BDD Aplicada\TP integrador archivos\TP_integrador_Archivos\Ventas_registradas.xlsx'
-GO
+--DECLARE @ruta_comp varchar(max) = 'C:\\Users\\Gonza\\Desktop\\BDA_Tp_Final\\TP_integrador_Archivos\\informacion_complementaria.xlsx'
+--DECLARE @ruta_catalogo varchar(max) = 'C:\\Users\\Gonza\\Desktop\\BDA_Tp_Final\\TP_integrador_Archivos\\Productos\\catalogo.csv'
+--DECLARE @ruta_electronicos varchar(max) = 'C:\\Users\\Gonza\\Desktop\\BDA_Tp_Final\\TP_integrador_Archivos\\Productos\\Electronic accessories.xlsx'
+--DECLARE @ruta_importados varchar(max) = 'C:\\Users\\Gonza\\Desktop\\BDA_Tp_Final\\TP_integrador_Archivos\\Productos\\Productos_importados.xlsx'
+--DECLARE @ruta_ventas varchar(max) ='C:\\Users\\Gonza\\Desktop\\BDA_Tp_Final\\TP_integrador_Archivos\\Ventas_registradas.xlsx'
+
+
 
 
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'inserts')
@@ -59,6 +60,7 @@ BEGIN
 END
 GO
 
+DECLARE @ruta_comp varchar(max) = 'C:\\Users\\Gonza\\Desktop\\BDA_Tp_Final\\TP_integrador_Archivos\\informacion_complementaria.xlsx'
 
 exec inserts.insertar_clasificacion @ruta = @ruta_comp
 GO
