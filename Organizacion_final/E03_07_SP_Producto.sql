@@ -3,14 +3,14 @@
 
 	Alumnos: 
 	43448036 Ghiano Gonzalo Agustín 
-	DNIXXXXX Felipe Morales 
-	DNI XXXX Javier Bastante
+	40853807 Felipe Morales 
+	38621360 Javier Bastante
 
 	Materia: BASE DE DATOS APLICADAS (3641)
 	Comisión: 01-2900
 	Fecha de entrega: 12/11/2024
 
-	Script correspondiente a la creación de los Store Procedure de las tablas pertenecientes al esquema Producto.
+	Script correspondiente a la creación de los Store Procedure de las tablas pertenecientes al esquema DATOS_PRODUCTOS.
 */
 
 USE Com2900G02

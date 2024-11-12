@@ -287,7 +287,7 @@ GO
 
 
 /*
-	Verificar si no existe y crear la tabla sucursal.
+	Verificar si no existe y crear la tabla detalle_venta.
 */
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_ventas.Detalle_venta') 
 AND type in (N'U'))
@@ -303,3 +303,20 @@ BEGIN
 	);
 END
 GO
+
+
+/*
+	Verificar si no existe y crear la tabla cotizacion para su utilizacion en la insercion de ventas.
+*/
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.Cotizacion_USD') 
+               AND type = N'U')
+BEGIN
+    CREATE TABLE gestion_tienda.Cotizacion_USD (
+		ID_cotizacion int identity(1,1),
+        valor_dolar DECIMAL(10,2),
+        fecha SMALLDATETIME DEFAULT GETDATE()
+    );
+END
+GO
+
+
