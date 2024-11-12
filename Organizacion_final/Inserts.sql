@@ -365,7 +365,7 @@ BEGIN
 	where turno = 'Jornada Completa';
 
 	insert gestion_tienda.Empleado (legajo, nombre, apellido, num_documento, tipo_documento, direccion, email_personal, email_empresarial, CUIL, turno)
-	select legajo,nombre,apellido,dni, 'DNI' as tipo_documento,direccion,email_personal,email_empresa, '11-11111111-1' as CUIL,turno
+	select cast(legajo as int),nombre,apellido,cast(dni as int), 'DU' as tipo_documento,direccion,email_personal,email_empresa, '11-11111111-1' as CUIL,turno
 	from #Empleado_temp et
 	where et.legajo COLLATE Modern_Spanish_CI_AI NOT IN 
     (select legajo from gestion_tienda.Empleado);
