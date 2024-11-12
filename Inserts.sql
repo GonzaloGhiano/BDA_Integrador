@@ -283,7 +283,7 @@ BEGIN
 		N'insert into #Sucursal_temp (ciudad,reemplazo,direccion,horario,telefono)
 		select * from OPENROWSET(
 			''Microsoft.ACE.OLEDB.16.0'',
-			''Excel 12.0;HDR=YES;Database=' + 'D:\Universidad\BDD Aplicada\TP integrador archivos\TP_integrador_Archivos\informacion_complementaria.xlsx' + ''',
+			''Excel 12.0;HDR=YES;Database=' + @ruta + ''',
 			''select * from [sucursal$]''
 			)';
 
