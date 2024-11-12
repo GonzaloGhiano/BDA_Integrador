@@ -85,8 +85,8 @@ BEGIN
 		ID_sucursal int IDENTITY(1,1),
 		nombre_sucursal varchar(30) not null,
 		ciudad varchar(30) not null,
-		direccion varchar(70) not null,
-		horario varchar(40) not null,
+		direccion varchar(100) not null,
+		horario varchar(80) not null,
 		telefono int,
 		habilitado bit default 1,
 		constraint pk_sucursal primary key(ID_sucursal)
@@ -138,7 +138,7 @@ BEGIN
 		apellido varchar(30) not null,
 		num_documento char(8) not null, --unique? sin tipo-dni no es seguro hacerlo
 		tipo_documento char(2) not null,
-		direccion varchar(80) not null,
+		direccion varchar(100) not null,
 		email_personal varchar(80),
 		email_empresarial varchar(80),
 		CUIL char(13) not null, --calcularlo????? vasrchar o int?
@@ -206,8 +206,8 @@ AND type in (N'U'))
 BEGIN
 	CREATE TABLE gestion_productos.Producto(
 		ID_prod INT IDENTITY(1,1),
-		nombre_Prod varchar(70) not null,
-		categoria varchar(20) not null,
+		nombre_Prod varchar(90) not null,
+		categoria varchar(50) not null,
 		precio decimal(10,2) check(precio>0) not null,
 		referencia_precio decimal(10,2) check(referencia_precio>0) null,
 		referencia_unidad varchar(6) null, --variabilidad de 1 a 6, mayoria 2, que conviene?
