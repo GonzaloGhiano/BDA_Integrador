@@ -193,6 +193,8 @@ BEGIN
 	WHERE et.producto COLLATE Modern_Spanish_CI_AI NOT IN 
     (SELECT nombre_prod FROM gestion_productos.Producto);
 
+	drop table #Electronic_temp;
+
 END
 GO
 
