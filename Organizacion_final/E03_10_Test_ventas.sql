@@ -40,6 +40,13 @@ select top 3 * from gestion_ventas.Detalle_venta
 GO
 
 
+--Insertamos una cotizacion del dolar
+EXEC datos_tienda.insertar_Cotizacion_USD
+@valor = 1000
+GO
+SELECT TOP 3 * FROM gestion_tienda.Cotizacion_USD order by fecha desc;
+
+
 --Primero necesitamos una sucursal
 EXEC datos_tienda.insertar_sucursal
 @nombre = 'Ramos',
@@ -112,17 +119,17 @@ GO
 
 --Iniciamos una venta en un punto de venta:
 EXEC datos_ventas.iniciar_comprobanteDeVenta
-@ID_punto_venta = 1,
+@ID_punto_venta = 6,
 @ID_cliente = null,
-@ID_empleado = 1;
+@ID_empleado = 3;
 GO
 
 select top 3 * from Factura_tmp;
 
 --Agregamos productos al carrito para el punto de venta (la caja) particular:
 EXEC datos_ventas.agregarProducto
-@ID_punto_venta = 1,
-@ID_prod = 1,
+@ID_punto_venta = 6,
+@ID_prod = 8,
 @cantidad = 2;
 GO
 
@@ -138,11 +145,11 @@ GO
 --Cerramos la venta, ingresandose el ID de factura, el comprobante de pago y demas datos. La venta y los detalles se ven
 --reflejados en las tablas permanentes
 EXEC datos_ventas.cerrarVenta
-@ID_punto_venta = 1,
-@ID_factura = 'ZZB-ACC-AAA',
-@tipo_factura = 'A',
-@id_medio_pago = 1,
-@identificador_pago = '11111';
+@ID_punto_venta = 6,
+@ID_factura = 'MJJ-ACC-AAA',
+@tipo_factura = 'B',
+@id_medio_pago = 3,
+@identificador_pago = '12221';
 GO
 
 SELECT TOP 5 * FROM gestion_ventas.Comprobante_venta;

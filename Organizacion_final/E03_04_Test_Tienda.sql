@@ -386,3 +386,42 @@ GO
 exec datos_tienda.reactivar_empleado
 @ID_empleado = 854
 GO
+
+
+-------------------------------------------------------------------------------------------------------------
+--					PRUEBAS UNITARIAS DE LA TABLA COTIZACION_USD
+-------------------------------------------------------------------------------------------------------------
+
+----------------------------------------------------------------------
+--Prueba unitaria insercion de cotizacion
+----------------------------------------------------------------------
+Select top 10 * from gestion_tienda.Cotizacion_USD;
+GO
+
+EXEC datos_tienda.insertar_Cotizacion_USD
+@valor = 1000;
+GO
+Select top 10 * from gestion_tienda.Cotizacion_USD;
+GO
+
+
+----------------------------------------------------------------------
+--Prueba unitaria modificacion de cotizacion
+----------------------------------------------------------------------
+
+EXEC datos_tienda.modificar_Cotizacion_USD
+@ID_cotizacion = 1,
+@valor = 1100;
+GO
+Select top 10 * from gestion_tienda.Cotizacion_USD;
+GO
+
+----------------------------------------------------------------------
+--Prueba unitaria borrado de cotizacion
+----------------------------------------------------------------------
+
+EXEC datos_tienda.eliminar_Cotizacion_USD
+@ID_cotizacion = 1
+GO
+Select top 10 * from gestion_tienda.Cotizacion_USD;
+GO

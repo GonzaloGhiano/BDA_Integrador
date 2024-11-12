@@ -208,6 +208,8 @@ BEGIN
 
 	IF(NOT EXISTS(SELECT 1 FROM Factura_tmp fact where fact.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'ERROR: No hay venta en curso';
+	IF(NOT EXISTS(SELECT 1 FROM gestion_productos.Producto where ID_prod = @ID_prod))
+		SET @error = @error + 'ERROR: No existe ese producto';
 
 	IF(@error = '')
 	BEGIN
@@ -266,7 +268,9 @@ BEGIN
 		SELECT @ID_factura, @tipo_factura, @ID_punto_venta, f_tmp.ID_cliente, 
 				cast(getdate() as date), 
 				cast(getdate() as time),
-				@id_medio_pago, f_tmp.ID_empleado, @identificador_pago, f_tmp.total, f_tmp.IVA
+				@id_medio_pago, f_tmp.ID_empleado, @identificador_pago, 
+				gestion_tienda.conversion_USD_a_ARS(f_tmp.total), 
+				gestion_tienda.conversion_USD_a_ARS(f_tmp.IVA)
 		FROM Factura_tmp f_tmp
 		WHERE f_tmp.ID_punto_venta = @ID_punto_venta;
 		
@@ -278,7 +282,7 @@ BEGIN
 		SET @ID_venta = (SELECT cv.ID_venta from gestion_ventas.Comprobante_venta cv where cv.ID_factura = @ID_factura);
 
 		INSERT INTO gestion_ventas.Detalle_venta(ID_venta, ID_prod, subtotal, cantidad)
-		SELECT @ID_venta, d_tmp.ID_prod, d_tmp.subtotal, d_tmp.cantidad
+		SELECT @ID_venta, d_tmp.ID_prod, gestion_tienda.conversion_USD_a_ARS(d_tmp.subtotal), d_tmp.cantidad
 		FROM Detalle_tmp d_tmp
 		WHERE d_tmp.ID_punto_venta = @ID_punto_venta;
 

@@ -3,8 +3,8 @@
 
 	Alumnos: 
 	43448036 Ghiano Gonzalo Agustín 
-	DNIXXXXX Felipe Morales 
-	DNI XXXX Javier Bastante
+	40853807 Felipe Morales 
+	38621360 Javier Bastante
 
 	Materia: BASE DE DATOS APLICADAS (3641)
 	Comisión: 01-2900
@@ -61,14 +61,15 @@ AS
 BEGIN
     DECLARE @resultado DECIMAL(10,2);
 
-    SET @resultado = @precio * (
-        SELECT TOP 1 valor_dolar
-        FROM gestion_tienda.Cotizacion_USD
-        ORDER BY fecha DESC
+	IF(NOT EXISTS(SELECT 1 FROM gestion_tienda.Cotizacion_USD))
+		SET @resultado = @precio
+	ELSE
+		SET @resultado = @precio * (
+			SELECT TOP 1 valor_dolar
+			FROM gestion_tienda.Cotizacion_USD
+			ORDER BY fecha DESC
     );
 
     RETURN @resultado;
 END
 GO
-
-

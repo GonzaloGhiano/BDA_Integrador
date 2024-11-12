@@ -3,8 +3,8 @@
 
 	Alumnos: 
 	43448036 Ghiano Gonzalo Agustín 
-	DNIXXXXX Felipe Morales 
-	DNI XXXX Javier Bastante
+	40853807 Felipe Morales 
+	38621360 Javier Bastante
 
 	Materia: BASE DE DATOS APLICADAS (3641)
 	Comisión: 01-2900
@@ -268,7 +268,7 @@ BEGIN
 		id_medio_pago int not null,
 		ID_empleado int not null,
 		identificador_pago varchar(22),
-		factura_pagada bit default 0,
+		factura_pagada bit default 1,
 		total_sinIVA decimal(10,2) CHECK(total_sinIVA>0) not null,
 		IVA decimal(10,2) CHECK(iva>0) not null,
 

@@ -3,8 +3,8 @@
 
 	Alumnos: 
 	43448036 Ghiano Gonzalo Agustín 
-	DNIXXXXX Felipe Morales 
-	DNI XXXX Javier Bastante
+	40853807 Felipe Morales 
+	38621360 Javier Bastante
 
 	Materia: BASE DE DATOS APLICADAS (3641)
 	Comisión: 01-2900
@@ -421,3 +421,44 @@ begin
 	END
 end
 GO
+
+
+-------------------------------------------------------------------------------------
+-- CREACIÓN DE LOS SP DE SUCURSAL Cotizacion_USD
+-------------------------------------------------------------------------------------
+
+create or alter procedure datos_tienda.insertar_Cotizacion_USD
+@valor decimal(10,2)
+as
+begin
+	insert gestion_tienda.Cotizacion_USD(valor_dolar)
+	values (@valor)
+
+end
+GO
+
+
+create or alter procedure datos_tienda.eliminar_Cotizacion_USD
+@ID_cotizacion int
+as
+begin
+	DELETE FROM gestion_tienda.Cotizacion_USD
+	where ID_cotizacion = @ID_cotizacion
+
+end
+GO
+
+create or alter procedure datos_tienda.modificar_Cotizacion_USD
+@ID_cotizacion int,
+@valor decimal(10,2)
+as
+begin
+	UPDATE gestion_tienda.Cotizacion_USD
+	SET valor_dolar = @valor,
+	fecha = GETDATE()
+	where ID_cotizacion = @ID_cotizacion
+
+end
+GO
+
+
