@@ -58,14 +58,14 @@ EXEC datos_tienda.insertar_sucursal
 @horario = '9AM - 11AM',
 @telefono = 1111;
 
-SELECT TOP 5 * from gestion_tienda.Sucursal;
+SELECT TOP 1 * from gestion_tienda.Sucursal;
 GO
 
 --Necesitamos una caja en esa sucursal, representada como un punto de venta
 EXEC datos_tienda.insertar_puntoDeVenta
-@nro_caja = 5,
-@ID_sucursal = 3;
-SELECT TOP 3 * from gestion_tienda.punto_de_venta;
+@nro_caja = 1,
+@ID_sucursal = 1;
+SELECT TOP 1 * from gestion_tienda.punto_de_venta;
 GO
 
 EXEC datos_productos.insertar_lineaProducto
@@ -80,16 +80,16 @@ EXEC datos_productos.insertar_producto
 @nombre_Prod = 'Lapiz triple',
 @categoria = 'Libreria prueba',
 @precio = 100.99,
-@cod_linea_prod = 2
+@cod_linea_prod = 1
 GO
 SELECT TOP 5 * from gestion_productos.Producto;
 GO
 
 EXEC datos_productos.insertar_producto
-@nombre_Prod = 'Boligoma rara',
+@nombre_Prod = 'Boligoma especial',
 @categoria = 'Libreria prueba',
 @precio = 200.50,
-@cod_linea_prod = 2
+@cod_linea_prod = 1
 GO
 SELECT TOP 5 * from gestion_productos.Producto;
 GO
@@ -97,10 +97,10 @@ GO
 
 --Insertamos un empleado:
 EXEC datos_tienda.insertar_empleado
-@legajo = 000011,
+@legajo = 000001,
 @nombre = 'Felipe',
 @apellido = 'Probando',
-@num_documento = 43440001,
+@num_documento = 43440000,
 @tipo_documento = 'DU',
 @direccion = 'Su casa 123',
 @email_personal = 'felipe.com',
@@ -122,23 +122,23 @@ GO
 
 --Iniciamos una venta en un punto de venta:
 EXEC datos_ventas.iniciar_comprobanteDeVenta
-@ID_punto_venta = 3,
+@ID_punto_venta = 6,
 @ID_cliente = null,
-@ID_empleado = 6;
+@ID_empleado = 3;
 GO
 
 select top 3 * from gestion_ventas.Factura_tmp;
 
 --Agregamos productos al carrito para el punto de venta (la caja) particular:
 EXEC datos_ventas.agregarProducto
-@ID_punto_venta = 3,
-@ID_prod = 3,
+@ID_punto_venta = 6,
+@ID_prod = 8,
 @cantidad = 2;
 GO
 
 
 EXEC datos_ventas.agregarProducto
-@ID_punto_venta = 3,
+@ID_punto_venta = 6,
 @ID_prod = 9,
 @cantidad = 3;
 GO
@@ -149,11 +149,11 @@ GO
 --Cerramos la venta, ingresandose el ID de factura, el comprobante de pago y demas datos. La venta y los detalles se ven
 --reflejados en las tablas permanentes
 EXEC datos_ventas.cerrarVenta
-@ID_punto_venta = 3,
-@ID_factura = 'MHH-ZNC-ANA',
-@tipo_factura = 'C',
-@id_medio_pago = 1,
-@identificador_pago = '1239421';
+@ID_punto_venta = 6,
+@ID_factura = 'MJJ-ZNC-ANA',
+@tipo_factura = 'B',
+@id_medio_pago = 3,
+@identificador_pago = '1999421';
 GO
 
 SELECT TOP 5 * FROM gestion_ventas.Comprobante_venta;
