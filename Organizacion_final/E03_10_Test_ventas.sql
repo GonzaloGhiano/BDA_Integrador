@@ -27,12 +27,15 @@ GO
 ----------------------------------------------------------------------
 
 --Cancelamos todas las ventas en curso
+USE Com2900G02;
+GO
+
 EXEC datos_ventas.cancelar_todasLasVentas
 GO
 
-select top 3 * from Detalle_tmp;
+select top 3 * from gestion_ventas.Detalle_tmp;
 GO
-select top 3 * from Factura_tmp;
+select top 3 * from gestion_ventas.Factura_tmp;
 GO
 select top 3 * from gestion_ventas.Comprobante_venta
 GO
@@ -124,7 +127,7 @@ EXEC datos_ventas.iniciar_comprobanteDeVenta
 @ID_empleado = 3;
 GO
 
-select top 3 * from Factura_tmp;
+select top 3 * from gestion_ventas.Factura_tmp;
 
 --Agregamos productos al carrito para el punto de venta (la caja) particular:
 EXEC datos_ventas.agregarProducto
@@ -133,23 +136,24 @@ EXEC datos_ventas.agregarProducto
 @cantidad = 2;
 GO
 
+
 EXEC datos_ventas.agregarProducto
-@ID_punto_venta = 1,
-@ID_prod = 2,
+@ID_punto_venta = 6,
+@ID_prod = 9,
 @cantidad = 3;
 GO
 
-select top 3 * from Detalle_tmp;
+select top 3 * from gestion_ventas.Detalle_tmp;
 GO
 
 --Cerramos la venta, ingresandose el ID de factura, el comprobante de pago y demas datos. La venta y los detalles se ven
 --reflejados en las tablas permanentes
 EXEC datos_ventas.cerrarVenta
 @ID_punto_venta = 6,
-@ID_factura = 'MJJ-ACC-AAA',
+@ID_factura = 'MJJ-ZNC-ANA',
 @tipo_factura = 'B',
 @id_medio_pago = 3,
-@identificador_pago = '12221';
+@identificador_pago = '1999421';
 GO
 
 SELECT TOP 5 * FROM gestion_ventas.Comprobante_venta;
@@ -197,7 +201,7 @@ GO
 --Necesitamos una caja en esa sucursal, representada como un punto de venta
 EXEC datos_tienda.insertar_puntoDeVenta
 @nro_caja = 2,
-@ID_sucursal = 2;
+@ID_sucursal = 3;
 SELECT TOP 2 * from gestion_tienda.punto_de_venta;
 GO
 
@@ -213,7 +217,7 @@ EXEC datos_productos.insertar_producto
 @nombre_Prod = 'Pampers',
 @categoria = 'Pañales',
 @precio = 200.99,
-@cod_linea_prod = 4
+@cod_linea_prod = 8
 GO
 SELECT TOP 5 * from gestion_productos.Producto;
 GO
@@ -255,17 +259,17 @@ GO
 
 --Iniciamos una venta en un punto de venta:
 EXEC datos_ventas.iniciar_comprobanteDeVenta
-@ID_punto_venta = 1,
+@ID_punto_venta = 6,
 @ID_cliente = null,
-@ID_empleado = 2;
+@ID_empleado = 3;
 GO
 
-select top 3 * from Factura_tmp;
+select top 3 * from gestion_ventas.Factura_tmp;
 
 --Agregamos productos al carrito para el punto de venta (la caja) particular:
 EXEC datos_ventas.agregarProducto
-@ID_punto_venta = 1,
-@ID_prod = 1,
+@ID_punto_venta = 6,
+@ID_prod = 8,
 @cantidad = 2;
 GO
 
@@ -275,17 +279,17 @@ EXEC datos_ventas.agregarProducto
 @cantidad = 3;
 GO
 
-select top 3 * from Detalle_tmp;
+select top 3 * from gestion_ventas.Detalle_tmp;
 GO
 
 --Cancelamos la venta con el ID_punto_venta indicado
 EXEC datos_ventas.cancelar_venta
-@ID_punto_venta = 1
+@ID_punto_venta = 6
 GO
 
-select top 3 * from Detalle_tmp;
+select top 3 * from gestion_ventas.Detalle_tmp;
 GO
-select top 3 * from Factura_tmp;
+select top 3 * from gestion_ventas.Factura_tmp;
 GO
 select top 3 * from gestion_ventas.Comprobante_venta
 GO
