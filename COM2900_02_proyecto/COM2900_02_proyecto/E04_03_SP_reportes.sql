@@ -1,3 +1,18 @@
+/*
+	Entrega 4. Grupo 02.
+
+	Alumnos: 
+	43448036 Ghiano Gonzalo Agustín 
+	40853807 Felipe Morales 
+	38621360 Javier Bastante
+
+	Materia: BASE DE DATOS APLICADAS (3641)
+	Comisión: 01-2900
+	Fecha de entrega: 12/11/2024
+
+	Script a la creacion de SPs para realizar los reportes de ventas.
+*/
+
 USE Com2900G02;
 GO
 
@@ -25,7 +40,7 @@ JOIN
     gestion_tienda.punto_de_venta pv ON cv.ID_punto_venta = pv.ID_punto_venta
 JOIN 
     gestion_tienda.Sucursal s ON pv.ID_sucursal = s.ID_sucursal
-JOIN 
+LEFT JOIN 
     gestion_clientes.Cliente c ON cv.ID_cliente = c.ID_cliente
 JOIN 
     gestion_ventas.Detalle_venta dv ON cv.ID_venta = dv.ID_venta
