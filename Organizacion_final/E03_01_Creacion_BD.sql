@@ -85,7 +85,9 @@ drop schema gestion_sistema;
 */
 
 
-
+/*
+	Verificar si no existe y crear la tabla Sucursal.
+*/
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.Sucursal') 
 AND type in (N'U'))
 BEGIN
@@ -93,8 +95,8 @@ BEGIN
 		ID_sucursal int IDENTITY(1,1),
 		nombre_sucursal varchar(30) not null,
 		ciudad varchar(30) not null,
-		direccion varchar(70) not null,
-		horario varchar(40) not null,
+		direccion varchar(100) not null,
+		horario varchar(80) not null,
 		telefono int,
 		habilitado bit default 1,
 		constraint pk_sucursal primary key(ID_sucursal)
@@ -116,11 +118,9 @@ BEGIN
 END		
 GO
 
--- ID para los sucursales? Y en que esquema queda mejor? uno nuevo?
--- en una tabla tan chica, el varchar o el char me cambia?
 
 /*
-	Verificar si no existe y crear la tabla sucursal.
+	Verificar si no existe y crear la tabla Cargo.
 */
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.Cargo') 
 AND type in (N'U'))
@@ -134,7 +134,7 @@ GO
 
 
 /*
-	Verificar si no existe y crear la tabla sucursal.
+	Verificar si no existe y crear la tabla Empleado.
 */
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_tienda.Empleado') 
 AND type in (N'U'))
@@ -144,12 +144,12 @@ BEGIN
 		legajo char(6) unique not null,
 		nombre varchar(40) not null,
 		apellido varchar(30) not null,
-		num_documento char(8) not null, --unique? sin tipo-dni no es seguro hacerlo
+		num_documento char(8) not null, 
 		tipo_documento char(2) not null,
-		direccion varchar(80) not null,
+		direccion varchar(100) not null,
 		email_personal varchar(80),
 		email_empresarial varchar(80),
-		CUIL char(13) not null, --calcularlo????? vasrchar o int?
+		CUIL char(13) not null,
 		cargo int,
 		sucursal_id int,
 		turno char(2) default 'NA', --No Asignado
@@ -172,7 +172,7 @@ GO
 
 
 /*
-	Verificar si no existe y crear la tabla sucursal.
+	Verificar si no existe y crear la tabla Medios de pago.
 */
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_ventas.Medio_de_Pago') 
 AND type in (N'U'))
@@ -185,13 +185,10 @@ BEGIN
 	);
 END
 GO
---drop table gestion_sistema.Medio_de_Pago;
---Vale la pena tener ES y EN? Vale la pena tener una tabla para los MP?
--- Booleano o multiples estados con CHAR?
 
 
 /*
-	Verificar si no existe y crear la tabla sucursal.
+	Verificar si no existe y crear la tabla Linea Producto.
 */
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_productos.Linea_Producto') 
 AND type in (N'U'))
@@ -207,18 +204,18 @@ GO
 
 
 /*
-	Verificar si no existe y crear la tabla sucursal.
+	Verificar si no existe y crear la tabla Producto.
 */
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_productos.Producto') 
 AND type in (N'U'))
 BEGIN
 	CREATE TABLE gestion_productos.Producto(
 		ID_prod INT IDENTITY(1,1),
-		nombre_Prod varchar(70) not null,
-		categoria varchar(20) not null,
+		nombre_Prod varchar(90) not null,
+		categoria varchar(50) not null,
 		precio decimal(10,2) check(precio>0) not null,
 		referencia_precio decimal(10,2) check(referencia_precio>0) null,
-		referencia_unidad varchar(6) null, --variabilidad de 1 a 6, mayoria 2, que conviene?
+		referencia_unidad varchar(6) null,
 		cod_linea_prod int,
 		habilitado bit default 1,
 
@@ -228,7 +225,9 @@ BEGIN
 END
 GO
 
-
+/*
+	Verificar si no existe y crear la tabla Cliente.
+*/
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_clientes.cliente') 
 AND type in (N'U'))
 BEGIN
@@ -252,7 +251,7 @@ GO
 
 
 /*
-	Verificar si no existe y crear la tabla sucursal.
+	Verificar si no existe y crear la tabla Comprobante_venta.
 */
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_ventas.Comprobante_venta') 
 AND type in (N'U'))
