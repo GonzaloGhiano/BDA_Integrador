@@ -213,8 +213,20 @@ BEGIN
 	BEGIN
 		SET @subtotalAux = @cantidad * (select precio from gestion_productos.Producto p where p.ID_prod = @ID_prod);
 
-		insert Detalle_tmp(ID_punto_venta,ID_prod,subtotal,cantidad)
-		values(@ID_punto_venta, @ID_prod, @subtotalAux, @cantidad);
+		-- Si ya se ingreso ese producto, se lo suma a la cantidad de ese detalle temporal
+		IF(EXISTS(SELECT 1 FROM Detalle_tmp 
+					where ID_punto_venta = @ID_punto_venta AND ID_prod = @ID_prod))
+		BEGIN
+			UPDATE Detalle_tmp
+			SET cantidad = cantidad + @cantidad, --Se suma la cantidad
+				subtotal = subtotal + @subtotalAux --Se suma el subtotal
+			where ID_punto_venta = @ID_punto_venta AND ID_prod = @ID_prod
+		END
+		ELSE --Si no existia, lo inserto
+		BEGIN
+			insert Detalle_tmp(ID_punto_venta,ID_prod,subtotal,cantidad)
+			values(@ID_punto_venta, @ID_prod, @subtotalAux, @cantidad);
+		END
 
 		UPDATE Factura_tmp
 		SET total = total + @subtotalAux
@@ -243,6 +255,7 @@ BEGIN
 	DECLARE @error varchar(max) = '',
 	@ID_venta INT = 0;
 
+	--Verificar que exista una venta en curso
 	IF(NOT EXISTS(SELECT 1 FROM Factura_tmp fact where fact.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'ERROR: No hay venta en curso';
 
@@ -282,6 +295,93 @@ BEGIN
 END
 GO
 
+
+
+CREATE OR ALTER PROCEDURE datos_ventas.cancelar_venta
+@ID_punto_venta INT
+AS
+BEGIN
+	DECLARE @error varchar(max) = '',
+	@ID_venta INT = 0;
+
+	IF(NOT EXISTS(SELECT 1 FROM Factura_tmp fact where fact.ID_punto_venta = @ID_punto_venta))
+		SET @error = @error + 'ERROR: No hay venta en curso';
+
+	IF(@error = '')
+	BEGIN
+		--Borramos la factura de temporales
+		DELETE FROM Factura_tmp
+		WHERE ID_punto_venta = @ID_punto_venta;
+	
+		--Borramos los detalles temporales
+		DELETE FROM Detalle_tmp
+		WHERE ID_punto_venta = @ID_punto_venta;
+
+	END
+	ELSE
+	BEGIN
+		RAISERROR (@error, 16, 1);
+	END
+END
+GO
+
+CREATE OR ALTER PROCEDURE datos_ventas.cancelar_todasLasVentas
+AS
+BEGIN
+		--Borramos la factura de temporales
+	DELETE FROM Factura_tmp;
+	
+		--Borramos los detalles temporales
+	DELETE FROM Detalle_tmp;
+END
+GO
+
+
+CREATE OR ALTER PROCEDURE datos_ventas.sacarProductodeVenta
+@ID_punto_venta INT,
+@ID_prod INT
+AS
+BEGIN
+	DECLARE @error varchar(max) = '',
+	@ID_venta INT = 0,
+	@subtotalAux INT = 0;
+
+	IF(NOT EXISTS(SELECT 1 FROM Factura_tmp fact where fact.ID_punto_venta = @ID_punto_venta))
+		SET @error = @error + 'ERROR: No hay venta en curso';
+
+	IF(NOT EXISTS(SELECT 1 FROM Detalle_tmp d_tmp where  d_tmp.ID_punto_venta = @ID_punto_venta AND d_tmp.ID_prod = @ID_prod))
+		SET @error = @error + 'ERROR: Producto no encontrado en esta venta';
+
+	IF(@error = '')
+	BEGIN
+
+		SET @subtotalAux = (select subtotal FROM Detalle_tmp
+		WHERE ID_punto_venta = @ID_punto_venta AND ID_prod = @ID_prod);
+
+		--Borramos los detalles temporales
+		DELETE FROM Detalle_tmp
+		WHERE ID_punto_venta = @ID_punto_venta AND ID_prod = @ID_prod;
+
+
+		UPDATE Factura_tmp
+		SET total = total - @subtotalAux
+		WHERE ID_punto_venta = @ID_punto_venta;
+
+		UPDATE Factura_tmp
+		SET IVA = Total*0.21
+		WHERE ID_punto_venta = @ID_punto_venta;
+
+	END
+	ELSE
+	BEGIN
+		RAISERROR (@error, 16, 1);
+	END
+END
+GO
+
+
+
+/*
 CREATE OR ALTER PROCEDURE datos_ventas.insertar_detalleVenta
 @ID_venta int,
 @ID_prod int,
@@ -316,5 +416,4 @@ BEGIN
 
 END
 GO
-
-
+*/

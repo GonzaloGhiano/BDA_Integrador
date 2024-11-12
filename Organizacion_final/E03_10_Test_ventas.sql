@@ -23,8 +23,21 @@ GO
 -------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------
---Prueba unitaria inserción de datos en tabla medios de pago
+--Prueba unitaria venta exitosa
 ----------------------------------------------------------------------
+
+--Cancelamos todas las ventas en curso
+EXEC datos_ventas.cancelar_todasLasVentas
+GO
+
+select top 3 * from Detalle_tmp;
+GO
+select top 3 * from Factura_tmp;
+GO
+select top 3 * from gestion_ventas.Comprobante_venta
+GO
+select top 3 * from gestion_ventas.Detalle_venta
+GO
 
 
 --Primero necesitamos una sucursal
@@ -136,6 +149,269 @@ SELECT TOP 5 * FROM gestion_ventas.Comprobante_venta;
 SELECT TOP 20 * FROM gestion_ventas.Detalle_venta;
 
 
+--Prueba de punto de venta incorrecto:
+EXEC datos_ventas.iniciar_comprobanteDeVenta
+@ID_punto_venta = 500,
+@ID_cliente = null,
+@ID_empleado = 1;
+GO--Error esperado: "No existe el punto de venta"
+
+--Prueba de punto de venta incorrecto:
+EXEC datos_ventas.agregarProducto
+@ID_punto_venta = 451,
+@ID_prod = 1,
+@cantidad = 2;
+GO--Error esperado: "ERROR: No hay venta en curso"
+
+--Prueba de punto de venta incorrecto:
+EXEC datos_ventas.cerrarVenta
+@ID_punto_venta = 3213,
+@ID_factura = 'ZZB-ACC-AAA',
+@tipo_factura = 'A',
+@id_medio_pago = 1,
+@identificador_pago = '11111';
+GO--Error esperado: "ERROR: No hay venta en curso"
+
+----------------------------------------------------------------------
+--Prueba unitaria venta cancelada
+----------------------------------------------------------------------
+
+--Primero necesitamos una sucursal
+EXEC datos_tienda.insertar_sucursal
+@nombre = 'San pedrito',
+@ciudad = 'La Matanza 2',
+@direccion = 'Florencio Varela 912',
+@horario = '8AM - 11PM',
+@telefono = 999;
+
+SELECT TOP 3 * from gestion_tienda.Sucursal;
+GO
+
+--Necesitamos una caja en esa sucursal, representada como un punto de venta
+EXEC datos_tienda.insertar_puntoDeVenta
+@nro_caja = 2,
+@ID_sucursal = 2;
+SELECT TOP 2 * from gestion_tienda.punto_de_venta;
+GO
+
+EXEC datos_productos.insertar_lineaProducto
+@linea_prod = 'Pañales y vinos';
+GO
+SELECT TOP 3 * from gestion_productos.Linea_Producto;
+GO
+
+
+--Insertamos dos productos:
+EXEC datos_productos.insertar_producto
+@nombre_Prod = 'Pampers',
+@categoria = 'Pañales',
+@precio = 200.99,
+@cod_linea_prod = 4
+GO
+SELECT TOP 5 * from gestion_productos.Producto;
+GO
+
+EXEC datos_productos.insertar_producto
+@nombre_Prod = 'Toro',
+@categoria = 'Vino',
+@precio = 50.50,
+@cod_linea_prod = 1
+GO
+SELECT TOP 5 * from gestion_productos.Producto;
+GO
+
+
+--Insertamos un empleado:
+EXEC datos_tienda.insertar_empleado
+@legajo = '000022',
+@nombre = 'Gonza',
+@apellido = 'Errando',
+@num_documento = '43245000',
+@tipo_documento = 'DU',
+@direccion = 'Su casa 123',
+@email_personal = 'gonza.com',
+@email_empresarial = 'gonza.org',
+@CUIL = '23-43443000-7',
+@sucursal_id = 1,
+@turno = 'TM';
+GO
+SELECT TOP 5 * from gestion_tienda.Empleado;
+GO
+
+--Insertamos un medio de pago:
+EXEC datos_ventas.insertar_medioDePago
+@nombre_ES = 'Tarjeta',
+@nombre_EN = 'Card';
+GO
+SELECT TOP 3 * from gestion_ventas.Medio_de_Pago;
+GO
+
+--Iniciamos una venta en un punto de venta:
+EXEC datos_ventas.iniciar_comprobanteDeVenta
+@ID_punto_venta = 1,
+@ID_cliente = null,
+@ID_empleado = 2;
+GO
+
+select top 3 * from Factura_tmp;
+
+--Agregamos productos al carrito para el punto de venta (la caja) particular:
+EXEC datos_ventas.agregarProducto
+@ID_punto_venta = 1,
+@ID_prod = 1,
+@cantidad = 2;
+GO
+
+EXEC datos_ventas.agregarProducto
+@ID_punto_venta = 1,
+@ID_prod = 2,
+@cantidad = 3;
+GO
+
+select top 3 * from Detalle_tmp;
+GO
+
+--Cancelamos la venta con el ID_punto_venta indicado
+EXEC datos_ventas.cancelar_venta
+@ID_punto_venta = 1
+GO
+
+select top 3 * from Detalle_tmp;
+GO
+select top 3 * from Factura_tmp;
+GO
+select top 3 * from gestion_ventas.Comprobante_venta
+GO
+select top 3 * from gestion_ventas.Detalle_venta
+GO
+
+
+--Cancelacion erronea por punto de venta inexistente
+EXEC datos_ventas.cancelar_venta
+@ID_punto_venta =54
+GO -- Error esperado: "ERROR: No hay venta en curso"
+
+----------------------------------------------------------------------
+--Prueba unitaria todas las ventas son canceladas
+----------------------------------------------------------------------
+
+--Iniciamos una venta en un punto de venta:
+EXEC datos_ventas.iniciar_comprobanteDeVenta
+@ID_punto_venta = 1,
+@ID_cliente = null,
+@ID_empleado = 2;
+GO
+
+--Agregamos productos al carrito para el punto de venta (la caja) particular:
+EXEC datos_ventas.agregarProducto
+@ID_punto_venta = 1,
+@ID_prod = 1,
+@cantidad = 2;
+GO
+
+select top 3 * from Detalle_tmp;
+select top 3 * from Factura_tmp;
+GO
+
+--Cancelamos todas las ventas en curso
+EXEC datos_ventas.cancelar_todasLasVentas
+GO
+
+select top 3 * from Detalle_tmp;
+GO
+select top 3 * from Factura_tmp;
+GO
+select top 3 * from gestion_ventas.Comprobante_venta
+GO
+select top 3 * from gestion_ventas.Detalle_venta
+GO
+
+----------------------------------------------------------------------
+--Prueba unitaria sacar producto del carrito
+----------------------------------------------------------------------
+
+
+--Necesitamos una caja en esa sucursal, representada como un punto de venta
+EXEC datos_tienda.insertar_puntoDeVenta
+@nro_caja = 3,
+@ID_sucursal = 2;
+SELECT TOP 10 * from gestion_tienda.punto_de_venta;
+GO
+
+EXEC datos_productos.insertar_lineaProducto
+@linea_prod = 'Pañales y vinos';
+GO
+SELECT TOP 3 * from gestion_productos.Linea_Producto;
+GO
+
+
+--Insertamos dos productos:
+EXEC datos_productos.insertar_producto
+@nombre_Prod = 'Pampers',
+@categoria = 'Pañales',
+@precio = 200.99,
+@cod_linea_prod = 4
+GO
+SELECT TOP 5 * from gestion_productos.Producto;
+GO
+
+--Insertamos dos productos:
+EXEC datos_productos.insertar_producto
+@nombre_Prod = 'Huggies',
+@categoria = 'Pañales',
+@precio = 200.99,
+@cod_linea_prod = 4
+GO
+SELECT TOP 10 * from gestion_productos.Producto;
+GO
+
+--Iniciamos una venta en un punto de venta:
+EXEC datos_ventas.iniciar_comprobanteDeVenta
+@ID_punto_venta = 1,
+@ID_cliente = null,
+@ID_empleado = 2;
+GO
+
+
+
+--Agregamos productos al carrito para el punto de venta (la caja) particular:
+EXEC datos_ventas.agregarProducto
+@ID_punto_venta = 1,
+@ID_prod = 1,
+@cantidad = 2;
+GO
+
+EXEC datos_ventas.agregarProducto
+@ID_punto_venta = 1,
+@ID_prod = 1,
+@cantidad = 2;
+GO
+
+select top 3 * from Detalle_tmp;
+GO
+select top 3 * from Factura_tmp;
+GO
+select top 3 * from gestion_ventas.Comprobante_venta
+GO
+select top 3 * from gestion_ventas.Detalle_venta
+GO
+
+EXEC datos_ventas.sacarProductodeVenta
+@ID_punto_venta = 1,
+@ID_prod = 1;
+GO
+
+select top 3 * from Detalle_tmp;
+GO
+select top 3 * from Factura_tmp;
+GO
+select top 3 * from gestion_ventas.Comprobante_venta
+GO
+select top 3 * from gestion_ventas.Detalle_venta
+GO
+
+EXEC datos_ventas.cancelar_todasLasVentas;
+GO
 
 ------------------------------------------------------------------------------------
 --	PRUEBAS UNITARIAS DE LA TABLA MEDIOS DE PAGO
@@ -206,3 +482,6 @@ EXEC datos_ventas.reactivar_medioDePago
 GO
 SELECT TOP 3 * FROM gestion_ventas.Medio_de_Pago;
 GO
+
+
+

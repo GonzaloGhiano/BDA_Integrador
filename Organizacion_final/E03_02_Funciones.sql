@@ -53,3 +53,22 @@ BEGIN
     RETURN @resultado;
 END
 GO
+
+
+CREATE OR ALTER FUNCTION gestion_tienda.conversion_USD_a_ARS (@precio DECIMAL(10,2))
+RETURNS DECIMAL(10,2)
+AS
+BEGIN
+    DECLARE @resultado DECIMAL(10,2);
+
+    SET @resultado = @precio * (
+        SELECT TOP 1 valor_dolar
+        FROM gestion_tienda.Cotizacion_USD
+        ORDER BY fecha DESC
+    );
+
+    RETURN @resultado;
+END
+GO
+
+
