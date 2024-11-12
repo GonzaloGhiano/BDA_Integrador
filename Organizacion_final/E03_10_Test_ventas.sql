@@ -97,10 +97,10 @@ GO
 
 --Insertamos un empleado:
 EXEC datos_tienda.insertar_empleado
-@legajo = '000001',
+@legajo = 000001,
 @nombre = 'Felipe',
 @apellido = 'Probando',
-@num_documento = '43440000',
+@num_documento = 43440000,
 @tipo_documento = 'DU',
 @direccion = 'Su casa 123',
 @email_personal = 'felipe.com',
@@ -234,10 +234,10 @@ GO
 
 --Insertamos un empleado:
 EXEC datos_tienda.insertar_empleado
-@legajo = '000022',
+@legajo = 000022,
 @nombre = 'Gonza',
 @apellido = 'Errando',
-@num_documento = '43245000',
+@num_documento = 43245000,
 @tipo_documento = 'DU',
 @direccion = 'Su casa 123',
 @email_personal = 'gonza.com',

@@ -141,10 +141,10 @@ AND type in (N'U'))
 BEGIN
 	CREATE TABLE gestion_tienda.Empleado(
 		ID_empleado INT IDENTITY(1,1),
-		legajo char(6) unique not null,
+		legajo INT unique not null,
 		nombre varchar(40) not null,
 		apellido varchar(30) not null,
-		num_documento char(8) not null, 
+		num_documento INT not null, 
 		tipo_documento char(2) not null,
 		direccion varchar(100) not null,
 		email_personal varchar(80),
@@ -161,7 +161,7 @@ BEGIN
 		CONSTRAINT CHECK_turno CHECK(
 			turno in('TM','TT','TN','JC', 'NA')),
 		CONSTRAINT fk_cargo foreign key(cargo) references gestion_tienda.Cargo(id_cargo),
-		CONSTRAINT CHECK_legajo CHECK(legajo like '[0-9][0-9][0-9][0-9][0-9][0-9]'),
+		CONSTRAINT CHECK_legajo CHECK(legajo > 0),
 		CONSTRAINT CHECK_CUIL CHECK(
 			CUIL like '[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]'),
 		CONSTRAINT UNIQUE_TipoDoc_NumDoc UNIQUE (tipo_documento, num_documento)
@@ -233,7 +233,7 @@ AND type in (N'U'))
 BEGIN
 	CREATE TABLE gestion_clientes.Cliente(
 		ID_cliente INT IDENTITY(1,1) PRIMARY KEY,
-		num_documento char(8) not null,
+		num_documento INT not null,
 		tipo_documento char(2) not null,
 		tipo_cliente char(6) not null,
 		habilitado bit default 1,

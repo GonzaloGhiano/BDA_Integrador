@@ -253,10 +253,10 @@ GO
 
 
 create or alter procedure datos_tienda.insertar_empleado
-@legajo char(6),
+@legajo int,
 @nombre varchar(40),
 @apellido varchar(30),
-@num_documento char(8) = NULL,
+@num_documento int = NULL,
 @tipo_documento char(2) = NULL,
 @direccion varchar(80),
 @email_personal varchar(80) = NULL,
@@ -282,9 +282,9 @@ BEGIN
 		SET @error = @error + 'ERROR: Tipo de documento invalido'
 
 	-- Validar formato legajo
-	IF(ISNULL(@legajo, '') = '')
+	IF(ISNULL(@legajo, 0) = 0)
 		SET @error = @error + 'ERROR: El legajo no puede ser vacio'
-	ELSE IF(@legajo not like('[0-9][0-9][0-9][0-9][0-9][0-9]'))
+	ELSE IF(@legajo <= 0)
 		SET @error = @error + 'Formato de legajo incorrecto';
 	
 
@@ -308,10 +308,10 @@ GO
 
 create or alter procedure datos_tienda.modificar_empleado
 @ID_empleado int,
-@legajo char(6) = NULL,
+@legajo int = NULL,
 @nombre varchar(40) = NULL,
 @apellido varchar(30) = NULL,
-@num_documento char(8) = NULL,
+@num_documento int = NULL,
 @tipo_documento char(2) = NULL,
 @direccion varchar(80) = NULL,
 @email_personal varchar(80) = NULL,
@@ -339,7 +339,7 @@ begin
 		SET @error = @error + 'ERROR: Tipo de documento invalido'
 
 	-- Validar formato legajo
-	IF(@legajo is not null and @legajo not like('[0-9][0-9][0-9][0-9][0-9][0-9]'))
+	IF(@legajo is not null and @legajo <= 0)
 		SET @error = @error + 'Formato de legajo incorrecto';
 
 	IF(@error = '')

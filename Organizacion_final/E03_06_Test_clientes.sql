@@ -28,7 +28,7 @@ GO
 
 --Inserción exitosa
 exec datos_clientes.insertar_cliente
-@num_documento = '46782096',
+@num_documento = 46782096,
 @tipo_documento = 'DU',
 @tipo_cliente = 'normal',
 @genero = 'male'
@@ -37,9 +37,9 @@ GO
 SELECT TOP 3 * FROM gestion_clientes.Cliente;
 GO
 
---Error numero de documento inválido
+--Error numero de documento inválido:
 exec datos_clientes.insertar_cliente
-@num_documento = 'LKJ42096',
+@num_documento = -3213,
 @tipo_documento = 'DU',
 @tipo_cliente = 'normal',
 @genero = 'male'

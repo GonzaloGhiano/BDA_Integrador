@@ -17,25 +17,23 @@
 USE Com2900G02
 GO
 
-
-CREATE OR ALTER FUNCTION gestion_tienda.validar_num_documento (@num_documento char(8))
+--Funcion de validar el formato de DNI
+CREATE OR ALTER FUNCTION gestion_tienda.validar_num_documento (@num_documento INT)
 RETURNS INT
 AS
 BEGIN
     DECLARE @resultado INT;
-	SET @resultado = 1;
+    SET @resultado = 1;
 
-    -- Validar si el número de documento está vacío o es NULL
-    IF(ISNULL(@num_documento, '') = '')
+    -- Validar si el número de documento está vacío, es NULL o negativo
+    IF(ISNULL(@num_documento, 0) = 0 OR @num_documento < 0)
         SET @resultado = 0;
-    -- Validar que el número de documento tenga exactamente 8 dígitos numéricos
-    ELSE IF(@num_documento NOT LIKE '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]')
-        SET @resultado = 0;;
 
     RETURN @resultado;
 END
 GO
 
+--Funcion de validar el tipo documento
 CREATE OR ALTER FUNCTION gestion_tienda.validar_tipo_documento (@tipo_documento char(8))
 RETURNS INT
 AS
@@ -55,6 +53,7 @@ END
 GO
 
 
+--Funcion para la conversion de USD a ARS
 CREATE OR ALTER FUNCTION gestion_tienda.conversion_USD_a_ARS (@precio DECIMAL(10,2))
 RETURNS DECIMAL(10,2)
 AS

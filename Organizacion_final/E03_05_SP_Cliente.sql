@@ -24,7 +24,7 @@ GO
 
 
 create or alter procedure datos_clientes.insertar_cliente
-@num_documento char(8),
+@num_documento int,
 @tipo_documento char(2),
 @tipo_cliente char(6),
 @genero char(6) = NULL
@@ -58,7 +58,7 @@ GO
 
 create or alter procedure datos_clientes.modificar_cliente
 @ID_cliente int,
-@num_documento char(8) = NULL,
+@num_documento int = NULL,
 @tipo_documento char(2) = NULL,
 @tipo_cliente char(6) = NULL,
 @genero char(6) = NULL

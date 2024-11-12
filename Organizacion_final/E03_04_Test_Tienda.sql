@@ -284,10 +284,10 @@ GO
 
 --Inserción correcta
 exec datos_tienda.insertar_empleado
-@legajo = '958396',
+@legajo = 999,
 @nombre = 'Pedrito',
 @apellido = 'Perez',
-@num_documento = '34957207',
+@num_documento = 10,
 @tipo_documento = 'DU',
 @direccion = 'Florencio Varela 986',
 @email_empresarial = 'p.perez@empresa.org',
@@ -297,33 +297,33 @@ GO
 SELECT TOP 3 * FROM gestion_tienda.Empleado
 GO
 
---Error tipo de documento no válido (mandando algo incorrecto)
+--Error tipo de documento no válido (mandando algo incorrecto):
 exec datos_tienda.insertar_empleado
-@legajo = '958396',
+@legajo = 100,
 @nombre = 'Pedrito',
 @apellido = 'Perez',
-@num_documento = '34957207',
+@num_documento = 101,
 @tipo_documento = 'JJ',
 @direccion = 'Florencio Varela 986',
 @email_empresarial = 'p.perez@empresa.org',
 @CUIL = '15-34957207-7';
-GO
+GO 
 
---Error tipo de documento no válido (mandando vacío)
+--Error tipo de documento no válido (mandando vacío):
 exec datos_tienda.insertar_empleado
-@legajo = '958396',
+@legajo = 858,
 @nombre = 'Pedrito',
 @apellido = 'Perez',
 @num_documento = '34957207',
-@tipo_documento = '',
+@tipo_documento = null,
 @direccion = 'Florencio Varela 986',
 @email_empresarial = 'p.perez@empresa.org',
 @CUIL = '15-34957207-7';
 GO
 
---Error numero de documento invalido (no mandar numero de documento)
+--Error numero de documento invalido (no mandar numero de documento):
 exec datos_tienda.insertar_empleado
-@legajo = '958396',
+@legajo = 9745,
 @nombre = 'Pedrito',
 @apellido = 'Perez',
 @tipo_documento = 'DU',
@@ -338,7 +338,7 @@ GO
 
 --Modificación exitosa de nombre
 exec datos_tienda.modificar_empleado
-@ID_empleado = 2,
+@ID_empleado = 1,
 @nombre = 'Jorge'
 GO
 
@@ -354,7 +354,7 @@ GO
 --Error número de documento no es valido
 exec datos_tienda.modificar_empleado
 @ID_empleado = 854,
-@num_documento = 'Jorge'
+@num_documento = -900
 GO
 
 ----------------------------------------------------------------------
