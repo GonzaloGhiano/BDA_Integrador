@@ -69,7 +69,7 @@ BEGIN
 	delete from CTE
 	where ocurrencias > 1;
 
-	INSERT INTO gestion_productos.Producto (nombre_Prod, categoria, precio, referencia_precio, reference_unit)
+	INSERT INTO gestion_productos.Producto (nombre_Prod, categoria, precio, referencia_precio, referencia_unidad)
 	SELECT nombre, categoria, precio, precio_referencia, referencia_unidad
 	FROM #Catalogo_temp ct
 	WHERE ct.nombre COLLATE Modern_Spanish_CI_AI NOT IN 
@@ -407,7 +407,7 @@ BEGIN
 	IF OBJECT_ID('tempdb..#Venta_temp') IS NULL
 	BEGIN
 		CREATE TABLE #Venta_temp(
-		ID_factura varchar(15),
+		ID_factura varchar(20),
 		tipo_factura varchar(1),
 		ciudad varchar(20),
 		tipo_cliente varchar(6),
@@ -416,7 +416,7 @@ BEGIN
 		precio varchar(20),
 		cantidad varchar(5),
 		fecha varchar(20),
-		hora varchar(10),
+		hora time,
 		medio_pago varchar(20),
 		empleado varchar(6),
 		id_pago varchar(40)
@@ -426,14 +426,36 @@ BEGIN
 	declare @cadenaSQL nvarchar(max)
 	set @cadenaSQL =
 
-		N'insert into #Venta_temp (ID_factura,tipo_factura,ciudad,tipo_cliente,genero,producto,precio,cantidad,fecha,hora,medio_pago,empleado,id_pago)
-		select * from OPENROWSET(
-			''Microsoft.ACE.OLEDB.16.0'',
-			''Excel 12.0;HDR=YES;Database=' + @ruta + ''',
-			''select * from [Ventas_registradas$]''
-			)';
+		N'bulk insert #Venta_temp
+		from ''' + 'D:\Universidad\BDD Aplicada\TP integrador archivos\TP_integrador_Archivos\Ventas_registradas.csv' + '''
+		with
+		(
+			FIELDTERMINATOR = '','',
+			ROWTERMINATOR = ''0x0a'',
+			DATAFILETYPE = ''char'',
+			CODEPAGE = ''65001'',
+			FIRSTROW = 2
+		)'
 
-	exec sp_executesql @cadenaSQL
+	EXEC sp_executesql @CadenaSQL
+	
+	insert gestion_ventas.Comprobante_venta (ID_factura,tipo_factura,ID_punto_venta,fecha,hora,id_medio_pago,ID_empleado,identificador_pago,total_sinIVA,IVA)
+	select vt.ID_factura,vt.tipo_factura,
+		(select ID_punto_venta
+		from gestion_tienda.Sucursal s join gestion_tienda.punto_de_venta pv on pv.ID_sucursal = s.ID_sucursal
+		where vt.ciudad = s.nombre_sucursal COLLATE Modern_Spanish_CI_AI),
+		convert(date,vt.fecha,101)as fecha,convert(time,vt.hora),
+		(select ID_MP
+		from gestion_ventas.Medio_de_Pago mp 
+		where vt.medio_pago = mp.nombre_EN COLLATE Modern_Spanish_CI_AI),
+		(select ID_empleado
+		from gestion_tienda.Empleado e 
+		where vt.empleado = e.legajo COLLATE Modern_Spanish_CI_AI),
+		vt.id_pago,
+		(cast(vt.precio as decimal(10,2)) * cast(vt.cantidad as decimal (10,2))) as total, 21
+	from #Venta_temp vt
+	where vt.ID_factura COLLATE Modern_Spanish_CI_AI NOT IN 
+    (select ID_factura from gestion_ventas.Comprobante_venta);
 
 
 
