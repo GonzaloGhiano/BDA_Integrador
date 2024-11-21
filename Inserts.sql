@@ -146,7 +146,6 @@ exec inserts.insertar_clasificacion @ruta = 'D:\Universidad\BDD Aplicada\TP inte
 GO
 
 
-
 --Medios pago
 
 CREATE OR ALTER PROCEDURE inserts.insertar_medioPago
@@ -156,8 +155,9 @@ BEGIN
 
 	IF OBJECT_ID('tempdb..#Medio_pago_temp') IS NULL
 	BEGIN
-		CREATE TABLE #Clasificacion_temp(
-		nombre_ES varchar(20),
+		CREATE TABLE #Medio_pago_temp(
+		extra varchar(40),
+		nombre_ES varchar(21),
 		nombre_EN varchar(80),
 		);
 	END
@@ -165,7 +165,7 @@ BEGIN
 	declare @cadenaSQL nvarchar(max)
 	set @cadenaSQL =
 
-		N'insert into #Clasificacion_temp (linea,producto)
+		N'insert into #Medio_pago_temp (extra,nombre_EN,nombre_ES)
 		select * from OPENROWSET(
 			''Microsoft.ACE.OLEDB.16.0'',
 			''Excel 12.0;HDR=NO;Database=' + @ruta + ''',
@@ -174,13 +174,28 @@ BEGIN
 
 	exec sp_executesql @cadenaSQL;
 
-	select *
-	from #Clasificacion_temp
+	alter table #Medio_pago_temp
+	drop column extra
+
+	delete #Medio_pago_temp
+	where nombre_ES is null
+
+	update #Medio_pago_temp    --ACORDARSE AGREGARLE UN CHAR MAS A NOMBRE_ES EN LA TABLA
+	set nombre_ES = 'Billetera Electronic'
+	where nombre_ES = 'Billetera Electronica'
+
+	insert gestion_ventas.Medio_de_Pago (nombre_ES,nombre_EN)
+	select nombre_ES,nombre_EN
+	from #Medio_pago_temp mp
+	WHERE mp.nombre_ES COLLATE Modern_Spanish_CI_AI NOT IN 
+    (SELECT nombre_ES FROM gestion_ventas.Medio_de_Pago);
+
 
 END
 GO
 
-
+exec inserts.insertar_medioPago @ruta = 'D:\Universidad\BDD Aplicada\TP integrador archivos\TP_integrador_Archivos\informacion_complementaria.xlsx'
+GO
 
 
 -- ARCHIVO ELECTRONICS
