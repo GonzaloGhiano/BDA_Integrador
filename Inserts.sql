@@ -69,7 +69,7 @@ BEGIN
 	delete from CTE
 	where ocurrencias > 1;
 
-	INSERT INTO gestion_productos.Producto (nombre_Prod, categoria, precio, referencia_precio, reference_unit)
+	INSERT INTO gestion_productos.Producto (nombre_Prod, categoria, precio, referencia_precio, referencia_unidad)
 	SELECT nombre, categoria, precio, precio_referencia, referencia_unidad
 	FROM #Catalogo_temp ct
 	WHERE ct.nombre COLLATE Modern_Spanish_CI_AI NOT IN 
@@ -143,6 +143,41 @@ GO
 
 
 exec inserts.insertar_clasificacion @ruta = 'D:\Universidad\BDD Aplicada\TP integrador archivos\TP_integrador_Archivos\informacion_complementaria.xlsx'
+GO
+
+
+
+--Medios pago
+
+CREATE OR ALTER PROCEDURE inserts.insertar_medioPago
+@ruta varchar(200)
+AS
+BEGIN
+
+	IF OBJECT_ID('tempdb..#Medio_pago_temp') IS NULL
+	BEGIN
+		CREATE TABLE #Clasificacion_temp(
+		nombre_ES varchar(20),
+		nombre_EN varchar(80),
+		);
+	END
+
+	declare @cadenaSQL nvarchar(max)
+	set @cadenaSQL =
+
+		N'insert into #Clasificacion_temp (linea,producto)
+		select * from OPENROWSET(
+			''Microsoft.ACE.OLEDB.16.0'',
+			''Excel 12.0;HDR=NO;Database=' + @ruta + ''',
+			''select * from [medios de pago$]''
+			)';
+
+	exec sp_executesql @cadenaSQL;
+
+	select *
+	from #Clasificacion_temp
+
+END
 GO
 
 
