@@ -413,7 +413,7 @@ BEGIN
 	where turno = 'Jornada Completa';
 
 	insert gestion_tienda.Empleado (legajo, nombre, apellido, num_documento, tipo_documento, direccion, email_personal, email_empresarial, CUIL, turno)
-	select legajo,nombre,apellido,dni, 'DNI' as tipo_documento,direccion,email_personal,email_empresa, '11-11111111-1' as CUIL,turno
+	select legajo,nombre,apellido,dni, 'DU' as tipo_documento,direccion,email_personal,email_empresa, '11-11111111-1' as CUIL,turno
 	from #Empleado_temp et
 	where et.legajo COLLATE Modern_Spanish_CI_AI NOT IN 
     (select legajo from gestion_tienda.Empleado);
@@ -452,10 +452,11 @@ CREATE OR ALTER PROCEDURE inserts.insertar_venta
 AS
 BEGIN
 
+
 	IF OBJECT_ID('tempdb..#Venta_temp') IS NULL
 	BEGIN
 		CREATE TABLE #Venta_temp(
-		ID_factura varchar(15),
+		ID_factura varchar(20),
 		tipo_factura varchar(1),
 		ciudad varchar(20),
 		tipo_cliente varchar(6),
@@ -464,7 +465,7 @@ BEGIN
 		precio varchar(20),
 		cantidad varchar(5),
 		fecha varchar(20),
-		hora varchar(10),
+		hora time,
 		medio_pago varchar(20),
 		empleado varchar(6),
 		id_pago varchar(40)
@@ -474,17 +475,65 @@ BEGIN
 	declare @cadenaSQL nvarchar(max)
 	set @cadenaSQL =
 
-		N'insert into #Venta_temp (ID_factura,tipo_factura,ciudad,tipo_cliente,genero,producto,precio,cantidad,fecha,hora,medio_pago,empleado,id_pago)
-		select * from OPENROWSET(
-			''Microsoft.ACE.OLEDB.16.0'',
-			''Excel 12.0;HDR=YES;Database=' + @ruta + ''',
-			''select * from [Ventas_registradas$]''
-			)';
+		N'bulk insert #Venta_temp
+		from ''' + @ruta + '''
+		with
+		(
+			FIELDTERMINATOR = '';'',
+			ROWTERMINATOR = ''0x0D0A'',
+			DATAFILETYPE = ''char'',
+			CODEPAGE = ''65001'',
+			FIRSTROW = 2
+		)'
 
-	exec sp_executesql @cadenaSQL
+	EXEC sp_executesql @CadenaSQL
+	
+	UPDATE #Venta_temp
+	SET producto =  replace(replace(replace(replace(replace(replace(producto,'Ã¡','á'),'Ã©','é'),'Ã³','ó'),'Ãº','ú'),'Ã±','ñ'),'Ã','í')
 
+	-- Insertar factura
 
+	insert gestion_ventas.Factura (nro_factura,tipo_factura,estado_factura,total_neto_sinIVA,IVA,CUIT_supermercado,CUIL_cliente,fecha_hora_emision)
+	select vt.ID_factura, vt.tipo_factura, 'PA',
+		(cast(vt.precio as decimal(10,2)) * cast(vt.cantidad as decimal (10,2))) as total, 21,
+	(select CUIT_supermercado
+		from gestion_ventas.Configuracion_Supermercado),
+	'111111111111', 
+	(select cast(vt.fecha as datetime) + cast(vt.hora as datetime) as FechaHora)
+	from #Venta_temp vt
+	where vt.ID_factura COLLATE Modern_Spanish_CI_AI NOT IN 
+    (select nro_factura from gestion_ventas.Factura);
 
+	-- Insertar venta
+
+	insert gestion_ventas.Venta (fecha,hora,ID_punto_venta,id_medio_pago,ID_empleado,identificador_pago,ID_factura)
+	select convert(date,vt.fecha,101)as fecha,vt.hora,
+	(select ID_punto_venta
+		from gestion_tienda.Sucursal s join gestion_tienda.punto_de_venta pv on pv.ID_sucursal = s.ID_sucursal
+		where vt.ciudad = s.ciudad COLLATE Modern_Spanish_CI_AI),
+	(select ID_MP
+		from gestion_ventas.Medio_de_Pago mp 
+		where vt.medio_pago = mp.nombre_EN COLLATE Modern_Spanish_CI_AI),
+	(select ID_empleado
+		from gestion_tienda.Empleado e 
+		where cast(vt.empleado as int) = e.legajo),
+	vt.id_pago,
+	(select f.ID_factura
+		from gestion_ventas.Factura f
+		where vt.ID_factura = f.nro_factura COLLATE Modern_Spanish_CI_AI)
+	from #Venta_temp vt
+	where vt.ID_factura COLLATE Modern_Spanish_CI_AI NOT IN 
+    (select f.nro_factura from gestion_ventas.Venta v join gestion_ventas.Factura f on v.ID_factura = f.ID_factura) 
+
+	--Insertar detalle de venta
+
+	insert gestion_ventas.Detalle_venta(ID_venta, ID_prod, subtotal, cantidad)
+	SELECT v.ID_venta, prod.ID_prod, vt.precio, 1
+	FROM #Venta_temp vt 
+	join gestion_ventas.Factura f on vt.ID_factura = f.nro_factura COLLATE Modern_Spanish_CI_AI
+	join gestion_ventas.Venta v on v.ID_factura = f.ID_factura 
+	join gestion_productos.Producto prod on prod.nombre_Prod = vt.producto COLLATE Modern_Spanish_CI_AI
+	where v.ID_venta not in (select ID_venta from gestion_ventas.Detalle_venta)
 
 END
 GO
