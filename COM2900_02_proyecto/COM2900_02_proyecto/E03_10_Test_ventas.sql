@@ -25,19 +25,29 @@ GO
 ----------------------------------------------------------------------
 --Prueba unitaria venta exitosa
 ----------------------------------------------------------------------
-
---Cancelamos todas las ventas en curso
 USE Com2900G02;
 GO
 
+--Agregamos configuración de CUIT del supermercado
+
+EXEC gestion_ventas.insertarCUIT_supermercado
+@CUIT = '11-23456789-1'
+GO
+SELECT TOP 10 * FROM gestion_ventas.Configuracion_Supermercado
+GO
+
+
+--Cancelamos todas las ventas en curso
 EXEC datos_ventas.cancelar_todasLasVentas
 GO
 
-select top 3 * from gestion_ventas.Detalle_tmp;
+select top 3 * from gestion_ventas.Predetalle;
 GO
-select top 3 * from gestion_ventas.Factura_tmp;
+select top 3 * from gestion_ventas.Prefactura;
 GO
-select top 3 * from gestion_ventas.Comprobante_venta
+select top 3 * from gestion_ventas.Factura
+GO
+select top 3 * from gestion_ventas.Venta
 GO
 select top 3 * from gestion_ventas.Detalle_venta
 GO
@@ -114,51 +124,96 @@ GO
 
 --Insertamos un medio de pago:
 EXEC datos_ventas.insertar_medioDePago
-@nombre_ES = 'Billuta',
-@nombre_EN = 'Cash';
+@nombre_ES = 'Efectivo2',
+@nombre_EN = 'Cash2';
 GO
 SELECT TOP 3 * from gestion_ventas.Medio_de_Pago;
 GO
 
 --Iniciamos una venta en un punto de venta:
 EXEC datos_ventas.iniciar_comprobanteDeVenta
-@ID_punto_venta = 6,
+@ID_punto_venta = 1,
 @ID_cliente = null,
-@ID_empleado = 3;
+@ID_empleado = 1;
 GO
 
-select top 3 * from gestion_ventas.Factura_tmp;
+select top 3 * from gestion_ventas.Prefactura;
 
 --Agregamos productos al carrito para el punto de venta (la caja) particular:
 EXEC datos_ventas.agregarProducto
-@ID_punto_venta = 6,
-@ID_prod = 8,
+@ID_punto_venta = 1,
+@ID_prod = 1,
 @cantidad = 2;
 GO
 
 
 EXEC datos_ventas.agregarProducto
-@ID_punto_venta = 6,
-@ID_prod = 9,
+@ID_punto_venta = 1,
+@ID_prod = 2,
 @cantidad = 3;
 GO
 
-select top 3 * from gestion_ventas.Detalle_tmp;
+select top 3 * from gestion_ventas.Predetalle;
 GO
 
 --Cerramos la venta, ingresandose el ID de factura, el comprobante de pago y demas datos. La venta y los detalles se ven
 --reflejados en las tablas permanentes
 EXEC datos_ventas.cerrarVenta
-@ID_punto_venta = 6,
-@ID_factura = 'MJJ-ZNC-ANA',
+@ID_punto_venta = 1,
+@nro_factura = 'MJJ-AAV-ANA',
 @tipo_factura = 'B',
-@id_medio_pago = 3,
-@identificador_pago = '1999421';
+@id_medio_pago = 1,
+@identificador_pago = '1129421';
 GO
 
-SELECT TOP 5 * FROM gestion_ventas.Comprobante_venta;
+SELECT TOP 5 * FROM gestion_ventas.Venta;
+SELECT TOP 5 * FROM gestion_ventas.Factura;
 SELECT TOP 20 * FROM gestion_ventas.Detalle_venta;
+select top 3 * from gestion_ventas.Prefactura;
+select top 3 * from gestion_ventas.Predetalle;
+GO
 
+----------------------------------------------------------------------
+--Prueba unitaria Cliente con CUIL
+----------------------------------------------------------------------
+
+--Prueba con cliente con CUIL
+exec datos_clientes.insertar_cliente
+@num_documento = 11112222,
+@tipo_documento = 'DU',
+@tipo_cliente = 'normal',
+@genero = 'Male',
+@CUIL = '30-11112222-2'
+GO
+SELECT TOP 10 * from gestion_clientes.Cliente;
+
+--Iniciamos una venta en un punto de venta:
+EXEC datos_ventas.iniciar_comprobanteDeVenta
+@ID_punto_venta = 1,
+@ID_cliente = 1,
+@ID_empleado = 1;
+GO
+
+EXEC datos_ventas.agregarProducto
+@ID_punto_venta = 1,
+@ID_prod = 2,
+@cantidad = 3;
+GO
+
+EXEC datos_ventas.cerrarVenta
+@ID_punto_venta = 1,
+@nro_factura = 'NAJ-ACC-AZA',
+@tipo_factura = 'C',
+@id_medio_pago = 1,
+@identificador_pago = '1153121';
+GO
+
+SELECT TOP 5 * FROM gestion_ventas.Venta;
+SELECT TOP 5 * FROM gestion_ventas.Factura;
+SELECT TOP 20 * FROM gestion_ventas.Detalle_venta;
+select top 3 * from gestion_ventas.Prefactura;
+select top 3 * from gestion_ventas.Predetalle;
+GO
 
 --Prueba de punto de venta incorrecto:
 EXEC datos_ventas.iniciar_comprobanteDeVenta
@@ -177,11 +232,12 @@ GO--Error esperado: "ERROR: No hay venta en curso"
 --Prueba de punto de venta incorrecto:
 EXEC datos_ventas.cerrarVenta
 @ID_punto_venta = 3213,
-@ID_factura = 'ZZB-ACC-AAA',
+@nro_factura = 'ZZB-ACC-AAA',
 @tipo_factura = 'A',
 @id_medio_pago = 1,
 @identificador_pago = '11111';
 GO--Error esperado: "ERROR: No hay venta en curso"
+
 
 ----------------------------------------------------------------------
 --Prueba unitaria venta cancelada
@@ -201,7 +257,7 @@ GO
 --Necesitamos una caja en esa sucursal, representada como un punto de venta
 EXEC datos_tienda.insertar_puntoDeVenta
 @nro_caja = 2,
-@ID_sucursal = 3;
+@ID_sucursal = 2;
 SELECT TOP 2 * from gestion_tienda.punto_de_venta;
 GO
 
@@ -217,7 +273,7 @@ EXEC datos_productos.insertar_producto
 @nombre_Prod = 'Pampers',
 @categoria = 'Pañales',
 @precio = 200.99,
-@cod_linea_prod = 8
+@cod_linea_prod = 2
 GO
 SELECT TOP 5 * from gestion_productos.Producto;
 GO
@@ -259,39 +315,42 @@ GO
 
 --Iniciamos una venta en un punto de venta:
 EXEC datos_ventas.iniciar_comprobanteDeVenta
-@ID_punto_venta = 6,
+@ID_punto_venta = 2,
 @ID_cliente = null,
-@ID_empleado = 3;
+@ID_empleado = 2;
 GO
 
-select top 3 * from gestion_ventas.Factura_tmp;
+select top 3 * from gestion_ventas.Prefactura;
+select top 3 * from gestion_ventas.Predetalle;
 
 --Agregamos productos al carrito para el punto de venta (la caja) particular:
 EXEC datos_ventas.agregarProducto
-@ID_punto_venta = 6,
-@ID_prod = 8,
+@ID_punto_venta = 2,
+@ID_prod = 2,
 @cantidad = 2;
 GO
 
 EXEC datos_ventas.agregarProducto
-@ID_punto_venta = 1,
-@ID_prod = 2,
+@ID_punto_venta = 2,
+@ID_prod = 1,
 @cantidad = 3;
 GO
 
-select top 3 * from gestion_ventas.Detalle_tmp;
+select top 3 * from gestion_ventas.Predetalle;
 GO
 
 --Cancelamos la venta con el ID_punto_venta indicado
 EXEC datos_ventas.cancelar_venta
-@ID_punto_venta = 6
+@ID_punto_venta = 2
 GO
 
-select top 3 * from gestion_ventas.Detalle_tmp;
+select top 3 * from gestion_ventas.Predetalle;
 GO
-select top 3 * from gestion_ventas.Factura_tmp;
+select top 3 * from gestion_ventas.Prefactura;
 GO
-select top 3 * from gestion_ventas.Comprobante_venta
+select top 3 * from gestion_ventas.Venta
+GO
+select top 3 * from gestion_ventas.Factura
 GO
 select top 3 * from gestion_ventas.Detalle_venta
 GO
@@ -320,19 +379,21 @@ EXEC datos_ventas.agregarProducto
 @cantidad = 2;
 GO
 
-select top 3 * from Detalle_tmp;
-select top 3 * from Factura_tmp;
+select top 3 * from gestion_ventas.Predetalle;
+select top 3 * from gestion_ventas.Prefactura;
 GO
 
 --Cancelamos todas las ventas en curso
 EXEC datos_ventas.cancelar_todasLasVentas
 GO
 
-select top 3 * from Detalle_tmp;
+select top 3 * from gestion_ventas.Predetalle;
 GO
-select top 3 * from Factura_tmp;
+select top 3 * from gestion_ventas.Prefactura;
 GO
-select top 3 * from gestion_ventas.Comprobante_venta
+select top 3 * from gestion_ventas.Venta
+GO
+select top 3 * from gestion_ventas.Factura
 GO
 select top 3 * from gestion_ventas.Detalle_venta
 GO
@@ -361,7 +422,7 @@ EXEC datos_productos.insertar_producto
 @nombre_Prod = 'Pampers',
 @categoria = 'Pañales',
 @precio = 200.99,
-@cod_linea_prod = 4
+@cod_linea_prod = 3
 GO
 SELECT TOP 5 * from gestion_productos.Producto;
 GO
@@ -371,7 +432,7 @@ EXEC datos_productos.insertar_producto
 @nombre_Prod = 'Huggies',
 @categoria = 'Pañales',
 @precio = 200.99,
-@cod_linea_prod = 4
+@cod_linea_prod = 3
 GO
 SELECT TOP 10 * from gestion_productos.Producto;
 GO
@@ -398,28 +459,23 @@ EXEC datos_ventas.agregarProducto
 @cantidad = 2;
 GO
 
-select top 3 * from Detalle_tmp;
+select top 3 * from gestion_ventas.Predetalle;
 GO
-select top 3 * from Factura_tmp;
+select top 3 * from gestion_ventas.Prefactura;
 GO
-select top 3 * from gestion_ventas.Comprobante_venta
+select top 3 * from gestion_ventas.Venta
+GO
+select top 3 * from gestion_ventas.Factura
 GO
 select top 3 * from gestion_ventas.Detalle_venta
 GO
+
 
 EXEC datos_ventas.sacarProductodeVenta
 @ID_punto_venta = 1,
 @ID_prod = 1;
 GO
 
-select top 3 * from Detalle_tmp;
-GO
-select top 3 * from Factura_tmp;
-GO
-select top 3 * from gestion_ventas.Comprobante_venta
-GO
-select top 3 * from gestion_ventas.Detalle_venta
-GO
 
 EXEC datos_ventas.cancelar_todasLasVentas;
 GO

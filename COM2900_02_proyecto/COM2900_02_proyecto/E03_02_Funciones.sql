@@ -72,3 +72,31 @@ BEGIN
     RETURN @resultado;
 END
 GO
+
+CREATE OR ALTER FUNCTION gestion_tienda.obtenerCUIL (
+    @ID_cliente INT -- Se define un nombre para el parámetro
+)
+RETURNS CHAR(13) -- Se especifica el tipo de dato de retorno
+AS
+BEGIN
+    DECLARE @CUIL CHAR(13);
+
+	 IF @ID_cliente IS NULL
+    BEGIN
+        RETURN '20-22222222-3'; -- Devolver NULL si el parámetro es nulo
+    END;
+
+	IF(NOT EXISTS(SELECT 1 FROM gestion_clientes.Cliente cli
+    WHERE ID_cliente = @ID_cliente))
+	BEGIN
+        RETURN '20-22222222-3'; -- Devolver NULL si el parámetro es nulo
+    END;
+
+    -- Aquí iría la lógica para obtener el CUIL, por ejemplo:
+    SELECT @CUIL = cli.CUIL
+    FROM gestion_clientes.Cliente cli
+    WHERE ID_cliente = @ID_cliente;
+
+    RETURN @CUIL; -- Se devuelve el valor calculado
+END;
+GO

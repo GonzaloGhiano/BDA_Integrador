@@ -27,7 +27,8 @@ create or alter procedure datos_clientes.insertar_cliente
 @num_documento int,
 @tipo_documento char(2),
 @tipo_cliente char(6),
-@genero char(6) = NULL
+@genero char(6) = NULL,
+@CUIL char(13) = NULL
 AS
 BEGIN
 
@@ -43,10 +44,10 @@ BEGIN
 
 	IF(@error = '')
 	BEGIN
-
-		insert gestion_clientes.Cliente(num_documento,tipo_documento,tipo_cliente,genero)
-		values (@num_documento,@tipo_documento,@tipo_cliente,@genero)
-
+		
+		insert gestion_clientes.Cliente(num_documento,tipo_documento,tipo_cliente,genero, CUIL)
+		values (@num_documento,@tipo_documento,@tipo_cliente,@genero, isnull(@CUIL,'20-22222222-3'));
+			--CUIL genérico para los clientes sin CUIL
 	END
 	ELSE
 	BEGIN
@@ -61,7 +62,8 @@ create or alter procedure datos_clientes.modificar_cliente
 @num_documento int = NULL,
 @tipo_documento char(2) = NULL,
 @tipo_cliente char(6) = NULL,
-@genero char(6) = NULL
+@genero char(6) = NULL,
+@CUIL char(13) = NULL
 AS
 BEGIN
 
@@ -87,7 +89,8 @@ BEGIN
 		set num_documento = isnull(@num_documento,num_documento),
 			tipo_documento = isnull(@tipo_documento,tipo_documento),
 			tipo_cliente = isnull(@tipo_cliente,tipo_cliente),
-			genero = isnull(@genero,genero)
+			genero = isnull(@genero,genero),
+			CUIL = isnull(@CUIL, CUIL)
 		where ID_cliente = @ID_cliente
 
 	END

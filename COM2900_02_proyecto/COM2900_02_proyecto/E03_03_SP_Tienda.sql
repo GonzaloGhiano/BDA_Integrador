@@ -488,7 +488,7 @@ begin
 end
 GO
 
-create or alter procedure datos_tienda.modificar_Cotizacion_USD
+create or alter procedure datos_tienda.modificar_cargo
 @id_cargo int,
 @cargo varchar(25)
 as

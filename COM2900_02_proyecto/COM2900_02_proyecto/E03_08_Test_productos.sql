@@ -90,11 +90,24 @@ EXEC datos_productos.insertar_producto
 @nombre_Prod = 'Juguete',
 @categoria = 'Patio',
 @precio = 100.99,
-@referencia_precio = null,
-@referencia_unidad = null,
+@moneda = 'USD',
+@referencia_precio = 100,
+@referencia_unidad = 'kg',
 @cod_linea_prod = 1;
 
-SELECT TOP 1 * FROM gestion_productos.Producto;
+SELECT TOP 10 * FROM gestion_productos.Producto;
+
+EXEC datos_productos.insertar_producto
+@nombre_Prod = 'Remera',
+@categoria = 'Ropa',
+@precio = 200.99,
+@moneda = NULL,
+@referencia_precio = 100,
+@referencia_unidad = NULL,
+@cod_linea_prod = 1;
+
+SELECT TOP 10 * FROM gestion_productos.Producto;
+
 
 --Inserción con error:
 EXEC datos_productos.insertar_producto

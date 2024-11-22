@@ -31,7 +31,19 @@ exec datos_clientes.insertar_cliente
 @num_documento = 46782096,
 @tipo_documento = 'DU',
 @tipo_cliente = 'normal',
-@genero = 'male'
+@genero = 'Male',
+@CUIL = '30-23432474-2'
+GO
+
+SELECT TOP 3 * FROM gestion_clientes.Cliente;
+GO
+
+--Inserción exitosa
+exec datos_clientes.insertar_cliente
+@num_documento = 53412312,
+@tipo_documento = 'DU',
+@tipo_cliente = 'Member',
+@genero = 'Male'
 GO
 
 SELECT TOP 3 * FROM gestion_clientes.Cliente;

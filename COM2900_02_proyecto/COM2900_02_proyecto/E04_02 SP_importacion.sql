@@ -16,6 +16,20 @@
 USE Com2900G02;
 GO
 
+DELETE FROM gestion_ventas.Detalle_venta
+DELETE FROM gestion_ventas.Venta
+DELETE FROM gestion_ventas.Factura
+
+DELETE FROM gestion_tienda.Empleado
+DELETE FROM gestion_tienda.punto_de_venta
+DELETE FROM gestion_tienda.Sucursal
+
+DELETE FROM gestion_ventas.Medio_de_Pago
+DELETE FROM gestion_clientes.Cliente
+DELETE FROM gestion_productos.Producto
+DELETE FROM gestion_productos.Linea_Producto
+
+
 DECLARE @ruta_comp varchar(max)= 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\informacion_complementaria.xlsx',
 		@ruta_catalogo varchar(max)= 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\Productos\catalogo.csv',
 		@ruta_electronica varchar(max)= 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\Productos\Electronic accessories',
@@ -84,6 +98,19 @@ SELECT TOP 30 * FROM gestion_tienda.Empleado;
 ---------------------------------------------------------------------------------
 -- Prueba de importacion del archivo venta
 ---------------------------------------------------------------------------------
+exec inserts.insertarMediosdePago
+GO
+SELECT * FROM gestion_ventas.Medio_de_Pago;
+
+
 exec inserts.insertar_venta @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\Ventas_registradas.csv'
 GO
 
+select TOP 100 * from gestion_ventas.Comprobante_venta;
+select TOP 100 * from gestion_ventas.Detalle_venta;
+
+
+
+exec inserts.insertarMediosdePago @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\informacion_complementaria.xlsx'
+GO
+SELECT * FROM gestion_ventas.Medio_de_Pago;

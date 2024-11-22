@@ -86,8 +86,8 @@ BEGIN
 	delete from CTE
 	where ocurrencias > 1;
 
-	INSERT INTO gestion_productos.Producto (nombre_Prod, categoria, precio, referencia_precio, referencia_unidad)
-	SELECT nombre, categoria, precio, precio_referencia, referencia_unidad
+	INSERT INTO gestion_productos.Producto (nombre_Prod, categoria, precio, referencia_precio, referencia_unidad, moneda)
+	SELECT nombre, categoria, precio, precio_referencia, referencia_unidad, 'ARS'
 	FROM #Catalogo_temp ct
 	WHERE ct.nombre COLLATE Modern_Spanish_CI_AI NOT IN 
     (SELECT nombre_prod FROM gestion_productos.Producto);
@@ -191,8 +191,8 @@ BEGIN
 	where ocurrencias > 1;
 
 
-	INSERT INTO gestion_productos.Producto (nombre_Prod, categoria, precio)
-	SELECT producto, 'Electronico' as categoria, precio_dolares
+	INSERT INTO gestion_productos.Producto (nombre_Prod, categoria, precio, moneda)
+	SELECT producto, 'Electronico' as categoria, precio_dolares, 'USD'
 	FROM #Electronic_temp et
 	WHERE et.producto COLLATE Modern_Spanish_CI_AI NOT IN 
     (SELECT nombre_prod FROM gestion_productos.Producto);
@@ -236,8 +236,8 @@ BEGIN
 	exec sp_executesql @cadenaSQL;
 
 
-	insert gestion_productos.Producto (nombre_Prod,categoria, precio)
-	select nombre_producto,'Importado' as cat, precio_unidad
+	insert gestion_productos.Producto (nombre_Prod,categoria, precio, moneda)
+	select nombre_producto,'Importado' as cat, precio_unidad, 'USD'
 	from #Importado_temp it
 	where it.nombre_producto COLLATE Modern_Spanish_CI_AI NOT IN 
     (select nombre_prod from gestion_productos.Producto);
@@ -483,6 +483,13 @@ BEGIN
 
 	--Insertar detalle de venta
 
+	insert gestion_ventas.Detalle_venta(ID_venta, ID_prod, subtotal, cantidad)
+	SELECT comp_v.ID_venta, prod.ID_prod, vt.precio, 1
+	FROM #Venta_temp vt 
+	join gestion_ventas.Comprobante_venta comp_v on comp_v.ID_factura = vt.ID_factura COLLATE Modern_Spanish_CI_AI
+	join gestion_productos.Producto prod on prod.nombre_Prod = vt.producto COLLATE Modern_Spanish_CI_AI
+	where comp_v.ID_venta not in (select ID_venta from gestion_ventas.Detalle_venta)
+
 END
 GO
 
@@ -502,3 +509,75 @@ BEGIN
 		@cargo = 'Gerente de sucursal';
 	
 END
+GO
+
+
+/*
+CREATE OR ALTER PROCEDURE inserts.insertarMediosdePago
+AS
+BEGIN
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Medio_de_Pago 
+	where nombre_ES = 'Efectivo'))
+		exec datos_ventas.insertar_medioDePago
+		@nombre_ES = 'Efectivo',
+		@nombre_EN = 'Cash';
+	
+
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Medio_de_Pago 
+	where nombre_ES = 'Tarjeta de credito'))
+		exec datos_ventas.insertar_medioDePago
+		@nombre_ES = 'Tarjeta de credito',
+		@nombre_EN = 'Credit card';
+
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Medio_de_Pago 
+	where nombre_ES = 'Billetera Electronica'))
+		exec datos_ventas.insertar_medioDePago
+		@nombre_ES = 'Billetera Electronica',
+		@nombre_EN = 'Ewallet';
+END
+GO
+*/
+
+--Medios pago
+
+CREATE OR ALTER PROCEDURE inserts.insertarMediosdePago
+@ruta varchar(200)
+AS
+BEGIN
+
+	IF OBJECT_ID('tempdb..#Medio_pago_temp') IS NULL
+	BEGIN
+		CREATE TABLE #Medio_pago_temp(
+		extra varchar(40),
+		nombre_ES varchar(21),
+		nombre_EN varchar(80),
+		);
+	END
+
+	declare @cadenaSQL nvarchar(max)
+	set @cadenaSQL =
+
+		N'insert into #Medio_pago_temp (extra,nombre_EN,nombre_ES)
+		select * from OPENROWSET(
+			''Microsoft.ACE.OLEDB.16.0'',
+			''Excel 12.0;HDR=NO;Database=' + @ruta + ''',
+			''select * from [medios de pago$]''
+			)';
+
+	exec sp_executesql @cadenaSQL;
+
+	alter table #Medio_pago_temp
+	drop column extra
+
+	delete #Medio_pago_temp
+	where nombre_ES is null
+
+	insert gestion_ventas.Medio_de_Pago (nombre_ES,nombre_EN)
+	select nombre_ES,nombre_EN
+	from #Medio_pago_temp mp
+	WHERE mp.nombre_ES COLLATE Modern_Spanish_CI_AI NOT IN 
+    (SELECT nombre_ES FROM gestion_ventas.Medio_de_Pago);
+END
+GO
+
+

@@ -137,15 +137,29 @@ END
 GO
 
 
+-------------------------------------------------------------------------------------
+-- CREACIÓN DEL SP DE INSERCIÓN DE CUIT SUPERMERCADO
+-------------------------------------------------------------------------------------
+
+CREATE or ALTER PROCEDURE gestion_ventas.insertarCUIT_supermercado
+@CUIT char(13)
+AS
+BEGIN
+	INSERT INTO gestion_ventas.Configuracion_Supermercado(CUIT_supermercado)
+	values (@CUIT);
+END
+GO
+
+
 
 -------------------------------------------------------------------------------------
 -- CREACIÓN DE LOS SP DE LINEA DE COMPROBANTE DE VENTA Y DETALLE DE VENTA
 -------------------------------------------------------------------------------------
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Detalle_tmp') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_ventas.Predetalle') 
 AND type in (N'U'))
 BEGIN
-		CREATE TABLE gestion_ventas.Detalle_tmp (
+		CREATE TABLE gestion_ventas.Predetalle (
 			ID_punto_venta INT,
 			ID_prod INT,
 			subtotal DECIMAL(10,2),
@@ -153,10 +167,10 @@ BEGIN
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Factura_tmp') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_ventas.Prefactura') 
 AND type in (N'U'))
 BEGIN
-	CREATE TABLE gestion_ventas.Factura_tmp (
+	CREATE TABLE gestion_ventas.Prefactura (
 		ID_punto_venta INT UNIQUE,
 		ID_cliente INT,
 		ID_empleado INT,
@@ -164,6 +178,14 @@ BEGIN
 		IVA DECIMAL(10,2));
 END
 GO
+
+/*
+	Se utilizaran tablas prefectura y predetalle para cargar los productos a la venta
+	en una misma linea de caja, posibilitando una unica venta en proceso por linea de 
+	venta.
+	Luego, se emitira una factura que puede ser pagada o cancelada.
+*/
+
 
 CREATE OR ALTER PROCEDURE datos_ventas.iniciar_comprobanteDeVenta
 @ID_punto_venta int,
@@ -176,7 +198,7 @@ BEGIN
 	--validar punto de venta
 	IF(NOT EXISTS(SELECT 1 FROM gestion_tienda.punto_de_venta pv where pv.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'No existe el punto de venta';
-	ELSE IF(EXISTS(SELECT 1 FROM gestion_ventas.Factura_tmp fact where fact.ID_punto_venta = @ID_punto_venta))
+	ELSE IF(EXISTS(SELECT 1 FROM gestion_ventas.Predetalle fact where fact.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'Un mismo punto de venta no puede hacer dos ventas a la vez';
 
 	--validar empleado
@@ -185,7 +207,7 @@ BEGIN
 
 	IF(@error = '')
 	BEGIN
-		insert gestion_ventas.Factura_tmp(ID_punto_venta,ID_cliente,ID_empleado, total, IVA)
+		insert gestion_ventas.Prefactura(ID_punto_venta,ID_cliente,ID_empleado, total, IVA)
 		values(@ID_punto_venta, @ID_cliente, @ID_empleado, 0, 0);
 	END
 	ELSE
@@ -205,7 +227,7 @@ BEGIN
 	DECLARE @error varchar(max) = '',
 			@subtotalAux DECIMAL(10,2) = 0;
 
-	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Factura_tmp fact where fact.ID_punto_venta = @ID_punto_venta))
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Prefactura fact where fact.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'ERROR: No hay venta en curso';
 	IF(NOT EXISTS(SELECT 1 FROM gestion_productos.Producto where ID_prod = @ID_prod))
 		SET @error = @error + 'ERROR: No existe ese producto';
@@ -215,25 +237,25 @@ BEGIN
 		SET @subtotalAux = @cantidad * (select precio from gestion_productos.Producto p where p.ID_prod = @ID_prod);
 
 		-- Si ya se ingreso ese producto, se lo suma a la cantidad de ese detalle temporal
-		IF(EXISTS(SELECT 1 FROM gestion_ventas.Detalle_tmp 
+		IF(EXISTS(SELECT 1 FROM gestion_ventas.Predetalle 
 					where ID_punto_venta = @ID_punto_venta AND ID_prod = @ID_prod))
 		BEGIN
-			UPDATE gestion_ventas.Detalle_tmp
+			UPDATE gestion_ventas.Predetalle
 			SET cantidad = cantidad + @cantidad, --Se suma la cantidad
 				subtotal = subtotal + @subtotalAux --Se suma el subtotal
 			where ID_punto_venta = @ID_punto_venta AND ID_prod = @ID_prod
 		END
 		ELSE --Si no existia, lo inserto
 		BEGIN
-			insert gestion_ventas.Detalle_tmp(ID_punto_venta,ID_prod,subtotal,cantidad)
+			insert gestion_ventas.Predetalle(ID_punto_venta,ID_prod,subtotal,cantidad)
 			values(@ID_punto_venta, @ID_prod, @subtotalAux, @cantidad);
 		END
 
-		UPDATE gestion_ventas.Factura_tmp
+		UPDATE gestion_ventas.Prefactura
 		SET total = total + @subtotalAux
 		WHERE ID_punto_venta = @ID_punto_venta;
 
-		UPDATE gestion_ventas.Factura_tmp
+		UPDATE gestion_ventas.Prefactura
 		SET IVA = Total*0.21
 		WHERE ID_punto_venta = @ID_punto_venta;
 
@@ -247,47 +269,71 @@ GO
 
 CREATE OR ALTER PROCEDURE datos_ventas.cerrarVenta
 @ID_punto_venta INT,
-@ID_factura CHAR(11),
+@nro_factura CHAR(11),
 @tipo_factura char(1),
 @id_medio_pago INT,
 @identificador_pago varchar(22)
 AS
 BEGIN
 	DECLARE @error varchar(max) = '',
-	@ID_venta INT = 0;
+	@ID_venta INT = 0,
+	@CUIT_SUPERMERCADO char(13) = '',
+	@ID_factura_aux int = 0,
+	@ID_cliente_aux int = 0,
+	@CUIL_cliente char(13) = '';
 
 	--Verificar que exista una venta en curso
-	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Factura_tmp fact where fact.ID_punto_venta = @ID_punto_venta))
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Prefactura fact where fact.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'ERROR: No hay venta en curso';
+
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Predetalle det where det.ID_punto_venta = @ID_punto_venta))
+		SET @error = @error + 'ERROR: La venta no tiene productos';
 
 	IF(@error = '')
 	BEGIN
-		INSERT INTO gestion_ventas.Comprobante_venta(ID_factura, tipo_factura, ID_punto_venta, ID_cliente, fecha,
-					hora, id_medio_pago, ID_empleado, identificador_pago, total_sinIVA, IVA)
-		SELECT @ID_factura, @tipo_factura, @ID_punto_venta, f_tmp.ID_cliente, 
+		SET @CUIT_SUPERMERCADO = (SELECT TOP 1 cs.CUIT_supermercado 
+								FROM gestion_ventas.Configuracion_Supermercado cs 
+								order by cs.fecha_hora_actualizacion desc)
+
+		SET @ID_cliente_aux = (Select TOP 1 pre.ID_cliente from gestion_ventas.Prefactura pre
+							where pre.ID_punto_venta = @ID_punto_venta)
+
+		SET @CUIL_cliente = gestion_tienda.obtenerCUIL(@ID_cliente_aux)
+
+		INSERT INTO gestion_ventas.Factura(nro_factura, tipo_factura, estado_factura, total_neto_sinIVA, IVA,
+					CUIT_supermercado, CUIL_cliente, fecha_hora_emision)
+		SELECT @nro_factura, @tipo_factura, 'PA', f_tmp.total, f_tmp.IVA,
+				@CUIT_SUPERMERCADO, @CUIL_cliente, getdate()
+		FROM gestion_ventas.Prefactura f_tmp
+		WHERE f_tmp.ID_punto_venta = @ID_punto_venta;
+			
+		SET @ID_factura_aux = (SELECT ID_factura from gestion_ventas.Factura fact
+								where fact.nro_factura = @nro_factura);
+
+		INSERT INTO gestion_ventas.Venta(ID_punto_venta,ID_cliente,fecha,hora,id_medio_pago,ID_empleado,
+					identificador_pago, ID_factura)
+		SELECT @ID_punto_venta, f_tmp.ID_cliente, 
 				cast(getdate() as date), 
 				cast(getdate() as time),
-				@id_medio_pago, f_tmp.ID_empleado, @identificador_pago, 
-				gestion_tienda.conversion_USD_a_ARS(f_tmp.total), 
-				gestion_tienda.conversion_USD_a_ARS(f_tmp.IVA)
-		FROM gestion_ventas.Factura_tmp f_tmp
+				@id_medio_pago, f_tmp.ID_empleado, @identificador_pago, @ID_factura_aux
+		FROM gestion_ventas.Prefactura f_tmp
 		WHERE f_tmp.ID_punto_venta = @ID_punto_venta;
 		
 		--Borramos la factura de temporales
-		DELETE FROM gestion_ventas.Factura_tmp
+		DELETE FROM gestion_ventas.Prefactura
 		WHERE ID_punto_venta = @ID_punto_venta;
 		
 		--Creamos los detalles de venta
-		SET @ID_venta = (SELECT cv.ID_venta from gestion_ventas.Comprobante_venta cv where cv.ID_factura = @ID_factura);
+		SET @ID_venta = (SELECT v.ID_venta from gestion_ventas.Venta v where v.ID_factura = @ID_factura_aux);
 
 		INSERT INTO gestion_ventas.Detalle_venta(ID_venta, ID_prod, subtotal, cantidad)
-		SELECT @ID_venta, d_tmp.ID_prod, gestion_tienda.conversion_USD_a_ARS(d_tmp.subtotal), d_tmp.cantidad
-		FROM gestion_ventas.Detalle_tmp d_tmp
+		SELECT @ID_venta, d_tmp.ID_prod, d_tmp.subtotal, d_tmp.cantidad
+		FROM gestion_ventas.Predetalle d_tmp
 		WHERE d_tmp.ID_punto_venta = @ID_punto_venta;
 
 
 		--Borramos los detalles temporales
-		DELETE FROM gestion_ventas.Detalle_tmp
+		DELETE FROM gestion_ventas.Predetalle
 		WHERE ID_punto_venta = @ID_punto_venta;
 
 	END
@@ -307,17 +353,17 @@ BEGIN
 	DECLARE @error varchar(max) = '',
 	@ID_venta INT = 0;
 
-	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Factura_tmp fact where fact.ID_punto_venta = @ID_punto_venta))
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Prefactura fact where fact.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'ERROR: No hay venta en curso';
 
 	IF(@error = '')
 	BEGIN
 		--Borramos la factura de temporales
-		DELETE FROM gestion_ventas.Factura_tmp
+		DELETE FROM gestion_ventas.Prefactura
 		WHERE ID_punto_venta = @ID_punto_venta;
 	
 		--Borramos los detalles temporales
-		DELETE FROM gestion_ventas.Detalle_tmp
+		DELETE FROM gestion_ventas.Predetalle
 		WHERE ID_punto_venta = @ID_punto_venta;
 
 	END
@@ -332,10 +378,10 @@ CREATE OR ALTER PROCEDURE datos_ventas.cancelar_todasLasVentas
 AS
 BEGIN
 		--Borramos la factura de temporales
-	DELETE FROM gestion_ventas.Factura_tmp;
+	DELETE FROM gestion_ventas.Prefactura;
 	
 		--Borramos los detalles temporales
-	DELETE FROM gestion_ventas.Detalle_tmp;
+	DELETE FROM gestion_ventas.Predetalle;
 END
 GO
 
@@ -349,28 +395,28 @@ BEGIN
 	@ID_venta INT = 0,
 	@subtotalAux INT = 0;
 
-	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Factura_tmp fact where fact.ID_punto_venta = @ID_punto_venta))
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Prefactura fact where fact.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'ERROR: No hay venta en curso';
 
-	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Detalle_tmp d_tmp where  d_tmp.ID_punto_venta = @ID_punto_venta AND d_tmp.ID_prod = @ID_prod))
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Predetalle d_tmp where  d_tmp.ID_punto_venta = @ID_punto_venta AND d_tmp.ID_prod = @ID_prod))
 		SET @error = @error + 'ERROR: Producto no encontrado en esta venta';
 
 	IF(@error = '')
 	BEGIN
 
-		SET @subtotalAux = (select subtotal FROM gestion_ventas.Detalle_tmp
+		SET @subtotalAux = (select subtotal FROM gestion_ventas.Predetalle
 		WHERE ID_punto_venta = @ID_punto_venta AND ID_prod = @ID_prod);
 
 		--Borramos los detalles temporales
-		DELETE FROM gestion_ventas.Detalle_tmp
+		DELETE FROM gestion_ventas.Predetalle
 		WHERE ID_punto_venta = @ID_punto_venta AND ID_prod = @ID_prod;
 
 
-		UPDATE gestion_ventas.Factura_tmp
+		UPDATE gestion_ventas.Prefactura
 		SET total = total - @subtotalAux
 		WHERE ID_punto_venta = @ID_punto_venta;
 
-		UPDATE gestion_ventas.Factura_tmp
+		UPDATE gestion_ventas.Prefactura
 		SET IVA = Total*0.21
 		WHERE ID_punto_venta = @ID_punto_venta;
 
@@ -382,41 +428,3 @@ BEGIN
 END
 GO
 
-
-
-/*
-CREATE OR ALTER PROCEDURE datos_ventas.insertar_detalleVenta
-@ID_venta int,
-@ID_prod int,
-@subtotal decimal(10,2),
-@cantidad int
-AS
-BEGIN
-    
-    DECLARE @error varchar(max) = '';
-
-    --Validar ID venta
-    IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Comprobante_venta
-                    WHERE ID_venta = @ID_venta))
-        SET @error = @error + 'ID de venta inexistente';
-
-    --Validar ID producto
-    IF(NOT EXISTS(SELECT 1 FROM gestion_productos.Producto
-                    WHERE ID_prod = @ID_prod))
-        SET @error = @error + 'ID de producto inexistente';
-
-    IF(@error = '')
-    BEGIN
-        
-        INSERT gestion_ventas.Detalle_venta (ID_venta,ID_prod,subtotal,cantidad)
-        values (@ID_venta,@ID_prod,@subtotal,@cantidad)
-
-    END
-    ELSE
-    BEGIN
-        RAISERROR (@error, 16, 1);
-    END
-
-END
-GO
-*/

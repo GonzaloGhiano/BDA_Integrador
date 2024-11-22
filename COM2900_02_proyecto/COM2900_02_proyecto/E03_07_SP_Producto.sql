@@ -22,7 +22,6 @@ GO
 -------------------------------------------------------------------------------------
 
 
-
 create or alter procedure datos_productos.insertar_lineaProducto
 @linea_prod varchar(35)
 as
@@ -118,6 +117,7 @@ CREATE OR ALTER PROCEDURE datos_productos.insertar_producto
 @nombre_Prod varchar(70) = null,
 @categoria varchar(20) = null,
 @precio decimal(10,2) = null,
+@moneda char(3) = null,
 @referencia_precio decimal(10,2) = null,
 @referencia_unidad varchar(6) = null,
 @cod_linea_prod int = null
@@ -146,9 +146,9 @@ BEGIN
 
 	IF(@error = '')
 	BEGIN
-		INSERT gestion_productos.Producto(nombre_Prod, categoria, precio, referencia_precio, referencia_unidad,
+		INSERT gestion_productos.Producto(nombre_Prod, categoria, precio, moneda, referencia_precio, referencia_unidad,
 		cod_linea_prod)
-		VALUES(@nombre_Prod, @categoria, @precio, @referencia_precio, @referencia_unidad, @cod_linea_prod)
+		VALUES(@nombre_Prod, @categoria, @precio, isnull(@moneda, 'ARS'), @referencia_precio, isnull(@referencia_unidad, 'Paq'), @cod_linea_prod)
 	END
 	ELSE
 	BEGIN
@@ -165,6 +165,7 @@ CREATE OR ALTER PROCEDURE datos_productos.modificar_producto
 @nombre_Prod varchar(70) = null,
 @categoria varchar(20) = null,
 @precio decimal(10,2) = null,
+@moneda char(3) = null,
 @referencia_precio decimal(10,2) = null,
 @referencia_unidad varchar(6) = null,
 @cod_linea_prod int = null
@@ -194,6 +195,7 @@ BEGIN
 		set	nombre_Prod = isnull(@nombre_Prod, nombre_Prod),
 			categoria = isnull(@categoria, categoria),
 			precio = isnull(@precio, precio),
+			moneda = isnull(@moneda, moneda),
 			referencia_precio = isnull(@referencia_precio, referencia_precio),
 			referencia_unidad = isnull(@referencia_unidad, referencia_unidad),
 			cod_linea_prod = isnull(@cod_linea_prod,cod_linea_prod)
