@@ -365,9 +365,16 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_v
 BEGIN
     CREATE TABLE gestion_ventas.Configuracion_Supermercado (
 		CUIT_supermercado char(13),
-		fecha_hora_actualizacion datetime default GETDATE()
+		fecha_hora_actualizacion datetime default GETDATE(),
+		CONSTRAINT CHECK_CUIL 
+		CHECK (CUIT_supermercado LIKE '[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]')
     );
 END
 GO
 
-
+/*
+ALTER TABLE gestion_ventas.Configuracion_Supermercado
+ADD CONSTRAINT CHECK_CUIL 
+CHECK (CUIT_supermercado LIKE '[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]');
+GO
+*/

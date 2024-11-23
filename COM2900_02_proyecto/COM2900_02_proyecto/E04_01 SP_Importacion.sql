@@ -310,31 +310,47 @@ BEGIN
     DECLARE @ID_sucursal INT;
 
     -- Insertar punto de venta para 'San Justo'
-    SELECT @ID_sucursal = ID_sucursal 
-    FROM gestion_tienda.Sucursal 
-    WHERE nombre_sucursal = 'San Justo';
+	IF NOT EXISTS(SELECT 1 from gestion_tienda.Sucursal s 
+				inner join gestion_tienda.punto_de_venta pv on s.ID_sucursal = pv.ID_sucursal
+				where s.nombre_sucursal = 'San Justo' and pv.nro_caja = 99)
+	BEGIN
+		SELECT @ID_sucursal = ID_sucursal 
+		FROM gestion_tienda.Sucursal 
+		WHERE nombre_sucursal = 'San Justo';
 
-    EXEC datos_tienda.insertar_puntoDeVenta
-        @nro_caja = 99,
+		EXEC datos_tienda.insertar_puntoDeVenta
+		@nro_caja = 99,
         @ID_sucursal = @ID_sucursal;
+	END
+
 
     -- Insertar punto de venta para 'Lomas del Mirador'
-    SELECT @ID_sucursal = ID_sucursal 
-    FROM gestion_tienda.Sucursal 
-    WHERE nombre_sucursal = 'Lomas del Mirador';
+	IF NOT EXISTS(SELECT 1 from gestion_tienda.Sucursal s 
+				inner join gestion_tienda.punto_de_venta pv on s.ID_sucursal = pv.ID_sucursal
+				where s.nombre_sucursal = 'Lomas del Mirador' and pv.nro_caja = 99)
+	BEGIN
+		SELECT @ID_sucursal = ID_sucursal 
+		FROM gestion_tienda.Sucursal 
+		WHERE nombre_sucursal = 'Lomas del Mirador';
 
-    EXEC datos_tienda.insertar_puntoDeVenta
+	    EXEC datos_tienda.insertar_puntoDeVenta
         @nro_caja = 99,
         @ID_sucursal = @ID_sucursal;
+	END
 
     -- Insertar punto de venta para 'Ramos Mejia'
-    SELECT @ID_sucursal = ID_sucursal 
-    FROM gestion_tienda.Sucursal 
-    WHERE nombre_sucursal = 'Ramos Mejia';
+	IF NOT EXISTS(SELECT 1 from gestion_tienda.Sucursal s 
+				inner join gestion_tienda.punto_de_venta pv on s.ID_sucursal = pv.ID_sucursal
+				where s.nombre_sucursal = 'Ramos Mejia' and pv.nro_caja = 99)
+	BEGIN
+		SELECT @ID_sucursal = ID_sucursal 
+		FROM gestion_tienda.Sucursal 
+		WHERE nombre_sucursal = 'Ramos Mejia';
 
-    EXEC datos_tienda.insertar_puntoDeVenta
+		EXEC datos_tienda.insertar_puntoDeVenta
         @nro_caja = 99,
         @ID_sucursal = @ID_sucursal;
+	END
 END
 GO
 
@@ -419,56 +435,76 @@ GO
 -------------------------------------------------------------------------
 -- SP DE IMPORTACION DE ARCHIVO Ventas
 -------------------------------------------------------------------------
+
 CREATE OR ALTER PROCEDURE inserts.insertar_venta
 @ruta varchar(200)
 AS
 BEGIN
+	DECLARE @CUIT_SUPERMERCADO char(13) = '';
 
-	IF OBJECT_ID('tempdb..#Venta_temp') IS NULL
-	BEGIN
-		CREATE TABLE #Venta_temp(
-		ID_factura varchar(20),
-		tipo_factura varchar(1),
-		ciudad varchar(20),
-		tipo_cliente varchar(6),
-		genero varchar(6),
-		producto varchar(100),
-		precio varchar(20),
-		cantidad varchar(5),
-		fecha varchar(20),
-		hora time,
-		medio_pago varchar(20),
-		empleado varchar(6),
-		id_pago varchar(40)
-		);
-	END
+    IF OBJECT_ID('tempdb..#Venta_temp') IS NULL
+    BEGIN
+        CREATE TABLE #Venta_temp(
+            nro_factura varchar(MAX),
+            tipo_factura varchar(MAX),
+            ciudad varchar(MAX),
+            tipo_cliente varchar(MAX),
+            genero varchar(MAX),
+            producto varchar(MAX),
+            precio varchar(MAX),
+            cantidad varchar(MAX),
+            fecha varchar(MAX),
+            hora varchar(MAX),
+            medio_pago varchar(MAX),
+            empleado varchar(MAX),
+            id_pago varchar(MAX)
+        );
+    END
 
-	declare @cadenaSQL nvarchar(max)
-	set @cadenaSQL =
+    DECLARE @cadenaSQL NVARCHAR(MAX);
+    SET @cadenaSQL = 
+        N'BULK INSERT #Venta_temp
+        FROM ''' + @ruta + '''
+        WITH (
+            FIELDTERMINATOR = '';'',
+            ROWTERMINATOR = ''0x0D0A'',
+            DATAFILETYPE = ''char'',
+            CODEPAGE = ''65001'',
+            FIRSTROW = 2
+        )';
 
-		N'bulk insert #Venta_temp
-		from ''' + 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\Ventas_registradas.csv' + '''
-		with
-		(
-			FIELDTERMINATOR = '';'',
-			ROWTERMINATOR = ''0x0D0A'',
-			DATAFILETYPE = ''char'',
-			CODEPAGE = ''65001'',
-			FIRSTROW = 2
-		)'
+    EXEC sp_executesql @cadenaSQL;
 
-	EXEC sp_executesql @CadenaSQL
-	
+    -- Normalizar los datos
 	UPDATE #Venta_temp
 	SET producto =  replace(replace(replace(replace(replace(replace(producto,'Ã¡','á'),'Ã©','é'),'Ã³','ó'),'Ãº','ú'),'Ã±','ñ'),'Ã','í')
 
-	-- Insertar comprobante de venta
-	insert gestion_ventas.Comprobante_venta (ID_factura,tipo_factura,ID_punto_venta,fecha,hora,id_medio_pago,ID_empleado,identificador_pago,total_sinIVA,IVA)
-	select vt.ID_factura,vt.tipo_factura,
-		(select ID_punto_venta
+	-- Obtener el CUIT del supermercado
+	SET @CUIT_SUPERMERCADO = (SELECT TOP 1 cs.CUIT_supermercado 
+								FROM gestion_ventas.Configuracion_Supermercado cs 
+								order by cs.fecha_hora_actualizacion desc)
+
+	-- Insertar factura si no existe
+	INSERT INTO gestion_ventas.Factura (nro_factura, tipo_factura, estado_factura, total_neto_sinIVA, IVA, CUIT_supermercado, CUIL_cliente, fecha_hora_emision)
+    SELECT vt.nro_factura, vt.tipo_factura, 'PA', 
+	(cast(vt.precio as decimal(10,2)) * cast(vt.cantidad as decimal (10,2))) as total,
+	(cast(vt.precio as decimal(10,2)) * cast(vt.cantidad as decimal (10,2)) * 0.21) as iva,
+	@CUIT_SUPERMERCADO,
+	'20-22222222-3',
+	(select cast(vt.fecha as datetime) + cast(vt.hora as datetime) as FechaHora)
+	FROM #Venta_temp vt
+	WHERE vt.nro_factura COLLATE Modern_Spanish_CI_AI not in (SELECT f.nro_factura COLLATE Modern_Spanish_CI_AI from gestion_ventas.Factura f)
+
+
+    -- Insertar venta si no existe
+	INSERT INTO gestion_ventas.Venta (fecha, hora, ID_punto_venta, id_medio_pago, ID_empleado, identificador_pago, ID_factura)
+    SELECT
+		CONVERT(DATE, vt.fecha, 101) AS fecha,
+		CONVERT(TIME, vt.hora) AS hora,
+		(select TOP 1 ID_punto_venta
 		from gestion_tienda.Sucursal s join gestion_tienda.punto_de_venta pv on pv.ID_sucursal = s.ID_sucursal
-		where vt.ciudad = s.ciudad COLLATE Modern_Spanish_CI_AI),
-		convert(date,vt.fecha,101)as fecha,convert(time,vt.hora),
+		where vt.ciudad = s.ciudad COLLATE Modern_Spanish_CI_AI
+			AND pv.nro_caja = 99),
 		(select ID_MP
 		from gestion_ventas.Medio_de_Pago mp 
 		where vt.medio_pago = mp.nombre_EN COLLATE Modern_Spanish_CI_AI),
@@ -476,22 +512,28 @@ BEGIN
 		from gestion_tienda.Empleado e 
 		where cast(vt.empleado as int) = e.legajo),
 		vt.id_pago,
-		(cast(vt.precio as decimal(10,2)) * cast(vt.cantidad as decimal (10,2))) as total, 21
-	from #Venta_temp vt
-	where vt.ID_factura COLLATE Modern_Spanish_CI_AI NOT IN 
-    (select ID_factura from gestion_ventas.Comprobante_venta);
+        f.ID_factura
+		FROM #Venta_temp vt
+		JOIN gestion_ventas.Factura f 
+        ON vt.nro_factura = f.nro_factura COLLATE Modern_Spanish_CI_AI
+		WHERE NOT EXISTS (
+			SELECT 1 
+			FROM gestion_ventas.Venta v 
+			WHERE v.ID_factura = f.ID_factura);
 
-	--Insertar detalle de venta
 
+    -- Insertar detalle de venta si no existe
 	insert gestion_ventas.Detalle_venta(ID_venta, ID_prod, subtotal, cantidad)
-	SELECT comp_v.ID_venta, prod.ID_prod, vt.precio, 1
+	SELECT venta.ID_venta, prod.ID_prod, vt.precio, cast(vt.cantidad as int)
 	FROM #Venta_temp vt 
-	join gestion_ventas.Comprobante_venta comp_v on comp_v.ID_factura = vt.ID_factura COLLATE Modern_Spanish_CI_AI
+	join gestion_ventas.Factura fact on fact.nro_factura = vt.nro_factura COLLATE Modern_Spanish_CI_AI
+	join gestion_ventas.Venta venta on venta.ID_factura = fact.ID_factura
 	join gestion_productos.Producto prod on prod.nombre_Prod = vt.producto COLLATE Modern_Spanish_CI_AI
-	where comp_v.ID_venta not in (select ID_venta from gestion_ventas.Detalle_venta)
-
+	where venta.ID_venta not in (select ID_venta from gestion_ventas.Detalle_venta)
 END
 GO
+
+
 
 CREATE OR ALTER PROCEDURE inserts.insertarCargosArchivos
 AS
@@ -512,34 +554,7 @@ END
 GO
 
 
-/*
-CREATE OR ALTER PROCEDURE inserts.insertarMediosdePago
-AS
-BEGIN
-	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Medio_de_Pago 
-	where nombre_ES = 'Efectivo'))
-		exec datos_ventas.insertar_medioDePago
-		@nombre_ES = 'Efectivo',
-		@nombre_EN = 'Cash';
-	
-
-	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Medio_de_Pago 
-	where nombre_ES = 'Tarjeta de credito'))
-		exec datos_ventas.insertar_medioDePago
-		@nombre_ES = 'Tarjeta de credito',
-		@nombre_EN = 'Credit card';
-
-	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Medio_de_Pago 
-	where nombre_ES = 'Billetera Electronica'))
-		exec datos_ventas.insertar_medioDePago
-		@nombre_ES = 'Billetera Electronica',
-		@nombre_EN = 'Ewallet';
-END
-GO
-*/
-
 --Medios pago
-
 CREATE OR ALTER PROCEDURE inserts.insertarMediosdePago
 @ruta varchar(200)
 AS
