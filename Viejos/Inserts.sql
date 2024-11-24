@@ -366,74 +366,116 @@ GO
 -- ARCHIVO INFORMACION COMPLEMENTARIA: EMPLEADOS
 
 CREATE OR ALTER PROCEDURE inserts.insertar_empleado
-@ruta varchar(200)
+@ruta varchar(200),
+@claveEncripcion nvarchar(128)
 AS
 BEGIN
+	
+	DECLARE @error varchar(max) = '';
 
-	IF OBJECT_ID('tempdb..#Empleado_temp') IS NULL
-	BEGIN
-		CREATE TABLE #Empleado_temp(
-		legajo varchar(6),
-		nombre varchar(40),
-		apellido varchar(40),
-		dni varchar(8),
-		dni_inicial float,
-		direccion varchar(100),
-		email_personal varchar(80),
-		email_empresa varchar(80),
-		CUIL varchar(10),
-		cargo varchar(20),
-		sucursal varchar(30),
-		turno varchar(20)
-		);
-	END
+	--Comprobamos que la clave de encripcion sea correcta antes de empezar
+	IF( (select top 1 clave_Set from encripcion.datos_empleado) = 1 and 
+		HASHBYTES('SHA2_256', @claveEncripcion) = (select hash_pass from encripcion.datos_empleado) )
+		BEGIN
 
-	declare @cadenaSQL nvarchar(max)
-	set @cadenaSQL =
+			IF OBJECT_ID('tempdb..#Empleado_temp') IS NULL
+			BEGIN
+				CREATE TABLE #Empleado_temp(
+				legajo varchar(6),
+				nombre varchar(40),
+				apellido varchar(40),
+				dni varchar(8),
+				dni_inicial float,
+				direccion varchar(100),
+				email_personal varchar(80),
+				email_empresa varchar(80),
+				CUIL varchar(10),
+				cargo varchar(20),
+				sucursal varchar(30),
+				turno varchar(20)
+				);
+			END
 
-		N'insert into #Empleado_temp (legajo,nombre,apellido,dni_inicial,direccion,email_personal,email_empresa,CUIL,cargo,sucursal,turno)
-		select * from OPENROWSET(
-			''Microsoft.ACE.OLEDB.16.0'',
-			''Excel 12.0;HDR=YES;Database=' + @ruta + ''',
-			''select * from [Empleados$]''
-			)';
+			declare @cadenaSQL nvarchar(max)
+			set @cadenaSQL =
 
-	exec sp_executesql @cadenaSQL;
+				N'insert into #Empleado_temp (legajo,nombre,apellido,dni_inicial,direccion,email_personal,email_empresa,CUIL,cargo,sucursal,turno)
+				select * from OPENROWSET(
+					''Microsoft.ACE.OLEDB.16.0'',
+					''Excel 12.0;HDR=YES;Database=' + @ruta + ''',
+					''select * from [Empleados$]''
+					)';
 
-	delete from #Empleado_temp
-	where legajo is null
+			exec sp_executesql @cadenaSQL;
 
-	--Convertimos el dni a varchar
-	update #Empleado_temp
-	set dni = cast((convert(int,dni_inicial)) as varchar(8));
+			delete from #Empleado_temp
+			where legajo is null
 
-	--Cambiamos jornada completa por JC
-	update #Empleado_temp
-	set turno = 'JC'
-	where turno = 'Jornada Completa';
+			--Convertimos el dni a varchar
+			update #Empleado_temp
+			set dni = cast((convert(int,dni_inicial)) as varchar(8));
 
-	insert gestion_tienda.Empleado (legajo, nombre, apellido, num_documento, tipo_documento, direccion, email_personal, email_empresarial, CUIL, turno)
-	select legajo,nombre,apellido,dni, 'DU' as tipo_documento,direccion,email_personal,email_empresa, '11-11111111-1' as CUIL,turno
-	from #Empleado_temp et
-	where et.legajo COLLATE Modern_Spanish_CI_AI NOT IN 
-    (select legajo from gestion_tienda.Empleado);
-
-	--Incluimos la sucursal
-	update e
-	set e.sucursal_id = s.ID_sucursal
-	from #Empleado_temp et join gestion_tienda.Empleado e on e.legajo = et.legajo COLLATE Modern_Spanish_CI_AI
-		join gestion_tienda.Sucursal s on et.sucursal = s.ciudad COLLATE Modern_Spanish_CI_AI
-	where e.sucursal_id is NULL;
-
-	--Incluimos el cargo
-	update e
-	set e.cargo = c.id_cargo
-	from #Empleado_temp et join gestion_tienda.Empleado e on e.legajo = et.legajo COLLATE Modern_Spanish_CI_AI
-		join gestion_tienda.Cargo c on c.cargo = et.cargo COLLATE Modern_Spanish_CI_AI
-	where e.cargo is NULL;
+			--Cambiamos jornada completa por JC
+			update #Empleado_temp
+			set turno = 'JC'
+			where turno = 'Jornada Completa';
 
 
-	drop table #Empleado_temp
+			insert gestion_tienda.Empleado (legajo, nombre, apellido, num_documento, tipo_documento, direccion, email_personal, email_empresarial, CUIL, turno)
+			select legajo,nombre,apellido,dni, 'DU' as tipo_documento,direccion,email_personal,email_empresa, '11-11111111-1' as CUIL,turno
+			from #Empleado_temp et
+			where et.legajo COLLATE Modern_Spanish_CI_AI NOT IN 
+			(select legajo from gestion_tienda.Empleado);
+
+			--Incluimos la sucursal
+			update e
+			set e.sucursal_id = s.ID_sucursal
+			from #Empleado_temp et join gestion_tienda.Empleado e on e.legajo = et.legajo COLLATE Modern_Spanish_CI_AI
+				join gestion_tienda.Sucursal s on et.sucursal = s.nombre_sucursal COLLATE Modern_Spanish_CI_AI
+			where e.sucursal_id is NULL;
+
+			--Incluimos el cargo
+			update e
+			set e.cargo = c.id_cargo
+			from #Empleado_temp et join gestion_tienda.Empleado e on e.legajo = et.legajo COLLATE Modern_Spanish_CI_AI
+				join gestion_tienda.Cargo c on c.cargo = et.cargo COLLATE Modern_Spanish_CI_AI
+			where e.cargo is NULL;
+
+			--Encriptamos los datos
+			alter table gestion_tienda.Empleado drop constraint UNIQUE_TipoDoc_NumDoc;
+			alter table gestion_tienda.Empleado alter column num_documento varbinary(256);
+			alter table gestion_tienda.Empleado add CONSTRAINT UNIQUE_TipoDoc_NumDoc UNIQUE (tipo_documento, num_documento);
+
+			alter table gestion_tienda.Empleado alter column direccion nvarchar(256);
+			alter table gestion_tienda.Empleado alter column email_personal nvarchar(256);
+
+			alter table gestion_tienda.Empleado drop constraint CHECK_CUIL;
+			alter table gestion_tienda.Empleado alter column CUIL nvarchar(256);
+
+
+
+			update gestion_tienda.Empleado
+			set num_documento =	EncryptByPassPhrase(@claveEncripcion
+					, cast(num_documento as varbinary(256)), 1, CONVERT(varbinary, ID_empleado)),
+			direccion =	EncryptByPassPhrase(@claveEncripcion
+					, direccion, 1, CONVERT(varbinary, ID_empleado)),
+			email_personal =	EncryptByPassPhrase(@claveEncripcion
+					, email_personal, 1, CONVERT(varbinary, ID_empleado)),
+			CUIL =	EncryptByPassPhrase(@claveEncripcion
+					, CUIL, 1, CONVERT(varbinary, ID_empleado))
+
+			drop table #Empleado_temp
+
+		END --end del if
+		ELSE
+		BEGIN
+
+			set @error = @error + 'ERROR: la clave no estaba seteada o es incorrecta.';
+			RAISERROR (@error, 16, 1);
+
+		END
+
+	
 
 END
 GO

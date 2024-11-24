@@ -26,7 +26,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'encripcio
 AND type in (N'U'))
 BEGIN
 		CREATE TABLE encripcion.datos_empleado(
-		encriptado bit default 0,
+		clave_set bit default 0,
 		hash_pass varbinary(64));
 
 END
@@ -36,9 +36,90 @@ if((select 1 from encripcion.datos_empleado) is null)
 	insert encripcion.datos_empleado default values
 GO
 
+--Seteo inicial de clave
+CREATE OR ALTER PROCEDURE encripcion.setear_claveEmp
+@clave nvarchar(128)
+AS
+BEGIN
+	
+	DECLARE @error varchar(max) = '';
+
+	IF( (select top 1 clave_Set from encripcion.datos_empleado) = 0)
+		BEGIN
+
+			update encripcion.datos_empleado
+			set clave_set = 1,
+				hash_pass = HASHBYTES('SHA2_256', @clave);
+
+		END
+	ELSE
+		BEGIN
+
+			set @error = @error + 'ERROR: la clave ya estaba seteada previamente.';
+			RAISERROR (@error, 16, 1);
+
+		END
+
+END
+GO
+
+--SP para cambiar la clave
+CREATE OR ALTER PROCEDURE encripcion.cambiar_claveEmp
+@claveVieja nvarchar(128),
+@claveNueva nvarchar(128)
+AS
+BEGIN
+	
+	DECLARE @error varchar(max) = '';
+
+	IF( ((select top 1 clave_Set from encripcion.datos_empleado) = 1) and 
+		(HASHBYTES('SHA2_256', @claveVieja) = (select hash_pass from encripcion.datos_empleado)) )
+		BEGIN
+
+			update gestion_tienda.Empleado
+				set num_documento = decryptByPassPhrase(@claveVieja
+					, cast(num_documento as varbinary(256)), 1, CONVERT(varbinary, ID_empleado)),
+					direccion = decryptByPassPhrase(@claveVieja
+					, direccion, 1, CONVERT(varbinary, ID_empleado)),
+					email_personal = decryptByPassPhrase(@claveVieja
+					, email_personal, 1, CONVERT(varbinary, ID_empleado)),
+					CUIL = decryptByPassPhrase(@claveVieja
+					, CUIL, 1, CONVERT(varbinary, ID_empleado))
+
+			
+			update gestion_tienda.Empleado
+			set num_documento =	EncryptByPassPhrase(@claveNueva
+					, cast(num_documento as varbinary(256)), 1, CONVERT(varbinary, ID_empleado)),
+			direccion =	EncryptByPassPhrase(@claveNueva
+					, direccion, 1, CONVERT(varbinary, ID_empleado)),
+			email_personal =	EncryptByPassPhrase(@claveNueva
+					, email_personal, 1, CONVERT(varbinary, ID_empleado)),
+			CUIL =	EncryptByPassPhrase(@claveNueva
+					, CUIL, 1, CONVERT(varbinary, ID_empleado))
+
+			update encripcion.datos_empleado
+			set hash_pass = HASHBYTES('SHA2_256', @claveNueva);
+
+		END
+	ELSE
+		BEGIN
+
+			set @error = @error + 'ERROR: la clave no estaba seteada o es incorrecta.';
+			RAISERROR (@error, 16, 1);
+
+		END
+
+END
+
 select * from encripcion.datos_empleado
 GO
 
+exec encripcion.setear_claveEmp @clave = 'ClaveSegura';
+
+exec encripcion.cambiar_claveEMP @claveVieja = 'ClaveSegura', @ClaveNueva = 'AhoraSiEsSegura';
+
+
+/*
 CREATE OR ALTER PROCEDURE encripcion.encriptar_empleados
 @clave nvarchar(128)
 AS
@@ -90,49 +171,39 @@ BEGIN
 		END	
 END
 GO
+*/
 
-CREATE OR ALTER PROCEDURE encripcion.desencriptar_empleados
+
+--SP de prueba para verificar la integridad de los datos luego del cifrado
+CREATE OR ALTER PROCEDURE encripcion.mostrar_empleadoDesencriptado
 @clave nvarchar(128)
 AS
 BEGIN
 
 	DECLARE @error varchar(max) = '';
 
-	if( (HASHBYTES('SHA2_256', @clave) = (select hash_pass from encripcion.datos_empleado)) and ((select encriptado from encripcion.datos_empleado) = 1) )
+	if( (HASHBYTES('SHA2_256', @clave) = (select hash_pass from encripcion.datos_empleado)) and ((select clave_set from encripcion.datos_empleado) = 1) )
 		BEGIN
-			update gestion_tienda.Empleado
-			set num_documento =	decryptByPassPhrase(@Clave
-					, cast(num_documento as varbinary(256)), 1, CONVERT(varbinary, ID_empleado)),
-				direccion =	decryptByPassPhrase(@Clave
-					, direccion, 1, CONVERT(varbinary, ID_empleado)),
-				email_personal =	decryptByPassPhrase(@Clave
-					, email_personal, 1, CONVERT(varbinary, ID_empleado)),
-				CUIL =	decryptByPassPhrase(@Clave
-					, CUIL, 1, CONVERT(varbinary, ID_empleado))
 
-
-			alter table gestion_tienda.Empleado drop constraint UNIQUE_TipoDoc_NumDoc;
-			alter table gestion_tienda.Empleado alter column num_documento int;
-			alter table gestion_tienda.Empleado add CONSTRAINT UNIQUE_TipoDoc_NumDoc UNIQUE (tipo_documento, num_documento);
-
-			alter table gestion_tienda.Empleado alter column direccion varchar(100);
-			alter table gestion_tienda.Empleado alter column email_personal varchar(80);
-
-			alter table gestion_tienda.Empleado alter column CUIL varchar(13);
-			alter table gestion_tienda.Empleado add CONSTRAINT CHECK_CUIL CHECK(
-					CUIL like '[0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]')
-
-			update encripcion.datos_empleado
-			set encriptado = 0
-
-			update encripcion.datos_empleado
-			set hash_pass = NULL
+			select ID_empleado,legajo,nombre,apellido,
+				cast(decryptByPassPhrase(@clave
+					, cast(num_documento as varbinary(256)), 1, CONVERT(varbinary, ID_empleado)) as int) as num_documento,
+				tipo_documento,
+				cast(decryptByPassPhrase(@clave
+					, direccion, 1, CONVERT(varbinary, ID_empleado)) as nvarchar(100)) as direccion,
+				cast(decryptByPassPhrase(@clave
+					, email_personal, 1, CONVERT(varbinary, ID_empleado)) as nvarchar(80)) as email_personal ,
+				email_empresarial,
+				cast(decryptByPassPhrase(@clave
+					, CUIL, 1, CONVERT(varbinary, ID_empleado)) as nchar(13)) as CUIL,
+				cargo,sucursal_id,turno,habilitado
+			from gestion_tienda.Empleado
 
 		END
 	ELSE
 		BEGIN
 
-			set @error = @error + 'ERROR: la clave es incorrecta o la tabla no esta encriptada';
+			set @error = @error + 'ERROR: la clave es incorrecta o no esta seteada';
 			RAISERROR (@error, 16, 1);
 
 		END
@@ -140,19 +211,7 @@ BEGIN
 END
 GO
 
-			update gestion_tienda.Empleado
-			set num_documento = 15101010
-			where ID_empleado = 15
+exec encripcion.mostrar_empleadoDesencriptado @clave = 'ClaveSegura'
 
-select *
-from gestion_tienda.Empleado
+exec encripcion.mostrar_empleadoDesencriptado @clave = 'AhoraSiEsSegura'
 
-exec encripcion.encriptar_empleados @Clave = 'ClaveSegura'
-
-select *
-from gestion_tienda.Empleado
-
-exec encripcion.desencriptar_empleados @Clave = 'ClaveSegura'
-
-select *
-from gestion_tienda.Empleado
