@@ -524,7 +524,9 @@ BEGIN
 
     -- Insertar detalle de venta si no existe
 	insert gestion_ventas.Detalle_venta(ID_venta, ID_prod, subtotal, cantidad)
-	SELECT venta.ID_venta, prod.ID_prod, vt.precio, cast(vt.cantidad as int)
+	SELECT venta.ID_venta, prod.ID_prod, 
+	(cast(vt.precio as decimal(10,2)) * cast(vt.cantidad as decimal (10,2))) as subtotal, 
+	cast(vt.cantidad as int)
 	FROM #Venta_temp vt 
 	join gestion_ventas.Factura fact on fact.nro_factura = vt.nro_factura COLLATE Modern_Spanish_CI_AI
 	join gestion_ventas.Venta venta on venta.ID_factura = fact.ID_factura

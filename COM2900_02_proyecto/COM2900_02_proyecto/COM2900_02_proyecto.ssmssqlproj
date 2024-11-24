@@ -18,6 +18,36 @@
           <ConnectionProtocol>NotSpecified</ConnectionProtocol>
           <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
         </ConnectionNode>
+        <ConnectionNode Name="DESKTOP-7BHKIU7\SQLEXPRESS:Felipe">
+          <Created>2024-11-23T13:39:20.1763306-03:00</Created>
+          <Type>SQL</Type>
+          <Server>DESKTOP-7BHKIU7\SQLEXPRESS</Server>
+          <UserName>Felipe</UserName>
+          <Authentication>SQL</Authentication>
+          <InitialDB />
+          <LoginTimeout>30</LoginTimeout>
+          <TrustServerCertificate>True</TrustServerCertificate>
+          <HostNameInServerCertificate />
+          <EncryptionOption>True</EncryptionOption>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+        <ConnectionNode Name="DESKTOP-7BHKIU7\SQLEXPRESS:Gonzalo">
+          <Created>2024-11-23T13:32:46.2174748-03:00</Created>
+          <Type>SQL</Type>
+          <Server>DESKTOP-7BHKIU7\SQLEXPRESS</Server>
+          <UserName>Gonzalo</UserName>
+          <Authentication>SQL</Authentication>
+          <InitialDB />
+          <LoginTimeout>30</LoginTimeout>
+          <TrustServerCertificate>True</TrustServerCertificate>
+          <HostNameInServerCertificate />
+          <EncryptionOption>True</EncryptionOption>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
       </Items>
     </LogicalFolder>
     <LogicalFolder Name="Queries" Type="0" Sorted="true">
@@ -53,9 +83,9 @@
           <FullPath>E03_05_SP_Cliente.sql</FullPath>
         </FileNode>
         <FileNode Name="E03_06_Test_clientes.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-7BHKIU7\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-7BHKIU7\SQLEXPRESS:False:Gonzalo</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>DESKTOP-7BHKIU7\SQLEXPRESS</AssociatedConnSrvName>
-          <AssociatedConnUserName />
+          <AssociatedConnUserName>Gonzalo</AssociatedConnUserName>
           <FullPath>E03_06_Test_clientes.sql</FullPath>
         </FileNode>
         <FileNode Name="E03_07_SP_Producto.sql">

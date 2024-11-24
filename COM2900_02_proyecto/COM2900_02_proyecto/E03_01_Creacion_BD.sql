@@ -295,39 +295,6 @@ GO
 
 
 /*
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_ventas.Comprobante_venta') 
-AND type in (N'U'))
-BEGIN
-	CREATE TABLE gestion_ventas.Comprobante_venta(
-		ID_venta INT IDENTITY(1,1) primary key,
-		ID_factura CHAR(11) not null UNIQUE,
-		tipo_factura char(1) not null,
-		ID_punto_venta int not null,
-		ID_cliente int null,
-		fecha DATE not null,
-		hora TIME not null,
-		id_medio_pago int not null,
-		ID_empleado int not null,
-		identificador_pago varchar(40),
-		factura_pagada bit default 1,
-		total_sinIVA decimal(10,2) CHECK(total_sinIVA>0) not null,
-		IVA decimal(10,2) CHECK(iva>0) not null,
-
-
-		CONSTRAINT fk_empleado foreign key(ID_empleado) references gestion_tienda.Empleado(ID_empleado),
-		CONSTRAINT fk_cliente foreign key(ID_cliente) references gestion_clientes.cliente(ID_cliente),
-		CONSTRAINT fk_medio_pago foreign key(id_medio_pago) references gestion_ventas.Medio_de_Pago(ID_MP),
-		CONSTRAINT CHECK_tipo_factura CHECK(
-			tipo_factura in('A','B','C')),
-		CONSTRAINT fk_punt_venta foreign key(ID_punto_venta) references 
-		gestion_tienda.punto_de_venta(ID_punto_venta)
-	);
-END
-GO
-*/
-
-
-/*
 	Verificar si no existe y crear la tabla detalle_venta.
 */
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'gestion_ventas.Detalle_venta') 
