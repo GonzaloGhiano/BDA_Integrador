@@ -160,6 +160,18 @@
           <AssociatedConnUserName />
           <FullPath>E05_04_Test_notaCredito.sql</FullPath>
         </FileNode>
+        <FileNode Name="E05_05_SP_Encriptacion.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-7BHKIU7\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-7BHKIU7\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>E05_05_SP_Encriptacion.sql</FullPath>
+        </FileNode>
+        <FileNode Name="E05_06_Test_Encriptacion.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-7BHKIU7\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-7BHKIU7\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>E05_06_Test_Encriptacion.sql</FullPath>
+        </FileNode>
       </Items>
     </LogicalFolder>
     <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">

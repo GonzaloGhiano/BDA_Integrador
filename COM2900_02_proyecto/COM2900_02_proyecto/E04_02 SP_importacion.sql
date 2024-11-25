@@ -102,7 +102,8 @@ EXEC inserts.insertarCargosArchivos;
 GO
 SELECT TOP 10 * FROM gestion_tienda.Cargo;
 
-exec inserts.insertar_empleado @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\informacion_complementaria.xlsx'
+--exec inserts.insertar_empleado @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\informacion_complementaria.xlsx'
+exec inserts.insertar_empleado_encriptado @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\informacion_complementaria.xlsx'
 GO
 SELECT TOP 30 * FROM gestion_tienda.Empleado;
 
@@ -129,22 +130,7 @@ select TOP 100 * from gestion_ventas.Factura order by ID_factura desc;
 select TOP 100 * from gestion_ventas.Detalle_venta order by ID_detalle_venta desc;
 
 
----------------------------------------------------------------------------------
--- Prueba de importacion del archivo informacion_complementaria tabla empleado encriptados
----------------------------------------------------------------------------------
-EXEC inserts.insertarCargosArchivos;
-GO
-SELECT TOP 10 * FROM gestion_tienda.Cargo;
 
-EXEC encriptacion.configuracion_encriptacion
-@clave = 'ClaveSegura';
 
-select * from encriptacion.Credenciales
-
-exec inserts.insertar_empleado_encriptado 
-@ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\informacion_complementaria.xlsx',
-@claveEncripcion = 'ClaveSegura';
-GO
-SELECT TOP 30 * FROM gestion_tienda.Empleado;
 
 
