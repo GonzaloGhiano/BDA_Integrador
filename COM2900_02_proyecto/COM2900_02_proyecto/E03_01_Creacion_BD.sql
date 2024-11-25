@@ -61,6 +61,13 @@ IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'reportes')
     exec('CREATE SCHEMA reportes');
 GO
 
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'datos_notas_credito')
+    exec('CREATE SCHEMA datos_notas_credito');
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = N'encriptacion')
+    exec('CREATE SCHEMA encriptacion');
+GO
 
 
 /*

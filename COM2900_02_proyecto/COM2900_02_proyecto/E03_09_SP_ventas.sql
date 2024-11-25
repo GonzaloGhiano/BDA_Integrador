@@ -225,7 +225,8 @@ CREATE OR ALTER PROCEDURE datos_ventas.agregarProducto
 AS
 BEGIN
 	DECLARE @error varchar(max) = '',
-			@subtotalAux DECIMAL(10,2) = 0;
+			@subtotalAux DECIMAL(10,2) = 0,
+			@precioARS DECIMAL(10,2) = 0;
 
 	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Prefactura fact where fact.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'ERROR: No hay venta en curso';
@@ -234,7 +235,10 @@ BEGIN
 
 	IF(@error = '')
 	BEGIN
-		SET @subtotalAux = @cantidad * (select precio from gestion_productos.Producto p where p.ID_prod = @ID_prod);
+		
+		SET @precioARS = gestion_tienda.obtener_precioARS(@ID_prod);
+
+		SET @subtotalAux = @cantidad * @precioARS;
 
 		-- Si ya se ingreso ese producto, se lo suma a la cantidad de ese detalle temporal
 		IF(EXISTS(SELECT 1 FROM gestion_ventas.Predetalle 
@@ -284,10 +288,19 @@ BEGIN
 
 	--Verificar que exista una venta en curso
 	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Prefactura fact where fact.ID_punto_venta = @ID_punto_venta))
-		SET @error = @error + 'ERROR: No hay venta en curso';
+		SET @error = @error + 'ERROR: No hay venta en curso ';
 
+	-- Verificar que la venta no esté vacia
 	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Predetalle det where det.ID_punto_venta = @ID_punto_venta))
-		SET @error = @error + 'ERROR: La venta no tiene productos';
+		SET @error = @error + 'ERROR: La venta no tiene productos ';
+
+	--Verificar que exista el medio de pago
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Medio_de_Pago mp where mp.ID_MP = @id_medio_pago))
+		SET @error = @error + 'ERROR: El medio de pago no es valido ';
+
+	--Verificar que el numero de factura sea unico
+	IF(EXISTS(SELECT 1 FROM gestion_ventas.Factura fact where fact.nro_factura = @nro_factura))
+		SET @error = @error + 'ERROR: Numero de factura repetido ';
 
 	IF(@error = '')
 	BEGIN

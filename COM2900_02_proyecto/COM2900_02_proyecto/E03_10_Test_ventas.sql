@@ -68,14 +68,14 @@ EXEC datos_tienda.insertar_sucursal
 @horario = '9AM - 11AM',
 @telefono = 1111;
 
-SELECT TOP 1 * from gestion_tienda.Sucursal;
+SELECT TOP 10 * from gestion_tienda.Sucursal;
 GO
 
 --Necesitamos una caja en esa sucursal, representada como un punto de venta
 EXEC datos_tienda.insertar_puntoDeVenta
 @nro_caja = 1,
 @ID_sucursal = 1;
-SELECT TOP 1 * from gestion_tienda.punto_de_venta;
+SELECT TOP 10 * from gestion_tienda.punto_de_venta;
 GO
 
 EXEC datos_productos.insertar_lineaProducto
@@ -479,6 +479,85 @@ GO
 
 EXEC datos_ventas.cancelar_todasLasVentas;
 GO
+
+----------------------------------------------------------------------
+--Prueba unitaria articulos en pesos y dolares
+----------------------------------------------------------------------
+
+--Insertamos dos productos:
+EXEC datos_productos.insertar_producto
+@nombre_Prod = 'Lapiz Nacional',
+@categoria = 'Libreria prueba',
+@precio = 20,
+@cod_linea_prod = 445,
+@moneda = 'ARS'
+GO
+
+SELECT TOP 10 * from gestion_productos.Linea_Producto;
+
+SELECT TOP 5 * from gestion_productos.Producto p where p.nombre_Prod like 'Lapiz Nacional';
+GO
+
+--Insertamos producto importado con precio en USD
+EXEC datos_productos.insertar_producto
+@nombre_Prod = 'Lapiz Importado',
+@categoria = 'Importado',
+@precio = 20,
+@cod_linea_prod = 445,
+@moneda = 'USD'
+GO 
+SELECT TOP 5 * from gestion_productos.Producto p where p.nombre_Prod like 'Lapiz Importado';
+GO
+
+
+SELECT TOP 5 * FROM gestion_tienda.punto_de_venta;
+SELECT TOP 5 * FROM gestion_tienda.Empleado;
+
+--Iniciamos una venta en un punto de venta:
+EXEC datos_ventas.iniciar_comprobanteDeVenta
+@ID_punto_venta = 22,
+@ID_cliente = null,
+@ID_empleado = 46;
+GO
+
+
+--Agregamos productos al carrito para el punto de venta (la caja) particular:
+EXEC datos_ventas.agregarProducto
+@ID_punto_venta = 22,
+@ID_prod = 23176,
+@cantidad = 2;
+GO
+
+EXEC datos_ventas.agregarProducto
+@ID_punto_venta = 22,
+@ID_prod = 23175,
+@cantidad = 2;
+GO
+
+select top 3 * from gestion_ventas.Predetalle;
+GO
+select top 3 * from gestion_ventas.Prefactura;
+GO
+select top 3 * from gestion_ventas.Venta
+GO
+select top 3 * from gestion_ventas.Factura
+GO
+select top 3 * from gestion_ventas.Detalle_venta
+GO
+
+SELECT * FROM gestion_ventas.Medio_de_Pago;
+
+EXEC datos_ventas.cerrarVenta
+@ID_punto_venta = 22,
+@nro_factura = '4AA-BBA-BCC',
+@tipo_factura = 'C',
+@id_medio_pago = 13,
+@identificador_pago = '3421412451';
+
+SELECT * FROM gestion_ventas.Factura fact
+INNER JOIN gestion_ventas.Venta v on v.ID_factura = fact.ID_factura
+INNER JOIN gestion_ventas.Detalle_venta dv on dv.ID_venta = v.ID_venta
+WHERE fact.nro_factura = '4AA-BBA-BCC';
 
 ------------------------------------------------------------------------------------
 --	PRUEBAS UNITARIAS DE LA TABLA MEDIOS DE PAGO

@@ -167,7 +167,7 @@ GO
 
 
 
-EXEC datos_ventas.iniciar_nota_credito
+EXEC datos_notas_credito.iniciar_nota_credito
 @ID_factura = 13001,
 @ID_empleado = 46,
 @ID_punto_venta = 22;
@@ -184,7 +184,9 @@ SELECT TOP 5 * FROM gestion_ventas.Detalle_nota_credito;
 SELECT TOP 20 * FROM gestion_ventas.Pre_notaCredito;
 SELECT TOP 5 * FROM gestion_ventas.Pre_detalle_notaCredito;
 
-EXEC datos_ventas.nota_credito_agregarProducto
+
+--Agregamos detalles de venta que sean parte de la factura pagada
+EXEC datos_notas_credito.nota_credito_agregarProducto
 @ID_punto_venta = 22,
 @ID_detalle_venta = 10220,
 @cantidad = 5;
@@ -194,8 +196,8 @@ SELECT TOP 5 * FROM gestion_ventas.Detalle_nota_credito;
 SELECT TOP 20 * FROM gestion_ventas.Pre_notaCredito;
 SELECT TOP 5 * FROM gestion_ventas.Pre_detalle_notaCredito;
 
-
-EXEC datos_ventas.confirmar_notaCredito
+--Confirmamos la nota de credito en curso en el punto de venta indicado
+EXEC datos_notas_credito.confirmar_notaCredito
 @ID_punto_venta = 22;
 
 SELECT TOP 5 * FROM gestion_ventas.Nota_credito;
@@ -203,5 +205,106 @@ SELECT TOP 5 * FROM gestion_ventas.Detalle_nota_credito;
 SELECT TOP 20 * FROM gestion_ventas.Pre_notaCredito;
 SELECT TOP 5 * FROM gestion_ventas.Pre_detalle_notaCredito;
 
-DELETE FROM gestion_ventas.Detalle_nota_credito;
-DELETE FROM gestion_ventas.Nota_credito
+--DELETE FROM gestion_ventas.Detalle_nota_credito;
+--DELETE FROM gestion_ventas.Nota_credito
+
+
+
+----------------------------------------------------------------------
+--Prueba unitaria cancelacion de Nota de Credito
+----------------------------------------------------------------------
+
+SELECT TOP 5 * FROM gestion_ventas.Nota_credito;
+SELECT TOP 5 * FROM gestion_ventas.Detalle_nota_credito;
+SELECT TOP 20 * FROM gestion_ventas.Pre_notaCredito;
+SELECT TOP 5 * FROM gestion_ventas.Pre_detalle_notaCredito;
+
+--Iniciamos la nota de credito:
+EXEC datos_notas_credito.iniciar_nota_credito
+@ID_factura = 13001,
+@ID_empleado = 46,
+@ID_punto_venta = 22;
+
+--Le agregamos un producto que forme parte de la venta pagada
+EXEC datos_notas_credito.nota_credito_agregarProducto
+@ID_punto_venta = 22,
+@ID_detalle_venta = 10220,
+@cantidad = 5;
+
+SELECT TOP 5 * FROM gestion_ventas.Nota_credito;
+SELECT TOP 5 * FROM gestion_ventas.Detalle_nota_credito;
+SELECT TOP 20 * FROM gestion_ventas.Pre_notaCredito;
+SELECT TOP 5 * FROM gestion_ventas.Pre_detalle_notaCredito;
+
+--Intentamos cancelar en un punto de venta equivocado:
+EXEC datos_notas_credito.cancelar_notaCredito_enCurso
+@ID_punto_venta = 800
+-- ERROR: No hay nota de credito en curso en ese punto de venta
+
+
+--Cancelamos la nota de credito en el punto de venta indicado:
+EXEC datos_notas_credito.cancelar_notaCredito_enCurso
+@ID_punto_venta = 22
+
+SELECT TOP 5 * FROM gestion_ventas.Nota_credito;
+SELECT TOP 5 * FROM gestion_ventas.Detalle_nota_credito;
+SELECT TOP 20 * FROM gestion_ventas.Pre_notaCredito;
+SELECT TOP 5 * FROM gestion_ventas.Pre_detalle_notaCredito;
+
+
+----------------------------------------------------------------------
+--Prueba unitaria cancelacion de todas las notas de credito en curso
+----------------------------------------------------------------------
+
+--Iniciamos la nota de credito:
+EXEC datos_notas_credito.iniciar_nota_credito
+@ID_factura = 13001,
+@ID_empleado = 46,
+@ID_punto_venta = 22;
+
+--Le agregamos un producto que forme parte de la venta pagada
+EXEC datos_notas_credito.nota_credito_agregarProducto
+@ID_punto_venta = 22,
+@ID_detalle_venta = 10220,
+@cantidad = 5;
+
+SELECT TOP 5 * FROM gestion_ventas.Nota_credito;
+SELECT TOP 5 * FROM gestion_ventas.Detalle_nota_credito;
+SELECT TOP 20 * FROM gestion_ventas.Pre_notaCredito;
+SELECT TOP 5 * FROM gestion_ventas.Pre_detalle_notaCredito;
+
+--Cancelamos todas las notas de credito en curso:
+EXEC datos_notas_credito.cancelar_todasLasNotasCredito_enCurso;
+
+SELECT TOP 5 * FROM gestion_ventas.Nota_credito;
+SELECT TOP 5 * FROM gestion_ventas.Detalle_nota_credito;
+SELECT TOP 20 * FROM gestion_ventas.Pre_notaCredito;
+SELECT TOP 5 * FROM gestion_ventas.Pre_detalle_notaCredito;
+
+
+----------------------------------------------------------------------
+--Prueba unitaria de Nota de credito vacia
+----------------------------------------------------------------------
+
+--Iniciamos la nota de credito:
+EXEC datos_notas_credito.iniciar_nota_credito
+@ID_factura = 13001,
+@ID_empleado = 46,
+@ID_punto_venta = 22;
+
+SELECT TOP 5 * FROM gestion_ventas.Nota_credito;
+SELECT TOP 5 * FROM gestion_ventas.Detalle_nota_credito;
+SELECT TOP 20 * FROM gestion_ventas.Pre_notaCredito;
+SELECT TOP 5 * FROM gestion_ventas.Pre_detalle_notaCredito;
+
+--Intentamos confirmar una nota de credito vacia en el punto de venta indicado
+EXEC datos_notas_credito.confirmar_notaCredito
+@ID_punto_venta = 22;
+--ERROR: La nota no tiene detalles
+
+SELECT TOP 5 * FROM gestion_ventas.Nota_credito;
+SELECT TOP 5 * FROM gestion_ventas.Detalle_nota_credito;
+SELECT TOP 20 * FROM gestion_ventas.Pre_notaCredito;
+SELECT TOP 5 * FROM gestion_ventas.Pre_detalle_notaCredito;
+
+EXEC datos_notas_credito.cancelar_todasLasNotasCredito_enCurso;

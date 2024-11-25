@@ -136,6 +136,30 @@
           <AssociatedConnUserName />
           <FullPath>E04_04_Test_reportes.sql</FullPath>
         </FileNode>
+        <FileNode Name="E05_01_Creacion_Roles.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-7BHKIU7\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-7BHKIU7\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>E05_01_Creacion_Roles.sql</FullPath>
+        </FileNode>
+        <FileNode Name="E05_02_Test_usuarios.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>E05_02_Test_usuarios.sql</FullPath>
+        </FileNode>
+        <FileNode Name="E05_03_SP_notaCredito.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-7BHKIU7\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-7BHKIU7\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>E05_03_SP_notaCredito.sql</FullPath>
+        </FileNode>
+        <FileNode Name="E05_04_Test_notaCredito.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-7BHKIU7\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-7BHKIU7\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>E05_04_Test_notaCredito.sql</FullPath>
+        </FileNode>
       </Items>
     </LogicalFolder>
     <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">

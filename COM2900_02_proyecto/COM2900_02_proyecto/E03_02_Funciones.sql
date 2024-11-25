@@ -73,6 +73,44 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER FUNCTION gestion_tienda.obtener_precioARS (@ID_prod int)
+RETURNS DECIMAL(10,2)
+AS
+BEGIN
+	DECLARE @resultado DECIMAL(10,2),
+			@precioUnitario DECIMAL(10,2) = 0;
+
+	--Si no existe el producto, devuelvo 0
+	IF(NOT EXISTS(SELECT 1 FROM gestion_productos.Producto p 
+					where p.ID_prod = @ID_prod))
+		SET @precioUnitario = 0;
+	ELSE SET @precioUnitario = (select precio from gestion_productos.Producto p where p.ID_prod = @ID_prod)
+
+	--Si no hay cotizacion, no haga nada
+	IF(NOT EXISTS(SELECT 1 FROM gestion_tienda.Cotizacion_USD))
+		SET @resultado = @precioUnitario
+	ELSE
+	BEGIN
+		--Si esta en dolares, lo paso a pesos
+		IF(EXISTS(SELECT 1 FROM gestion_productos.Producto p 
+					where p.ID_prod = @ID_prod AND p.moneda = 'USD'))
+		BEGIN
+			SET @resultado = @precioUnitario * (
+			SELECT TOP 1 valor_dolar
+			FROM gestion_tienda.Cotizacion_USD
+			ORDER BY fecha DESC
+			);
+		END
+		ELSE --Si no estaba en dolares, lo dejo en pesos
+			SET @resultado = @precioUnitario
+	END
+
+	RETURN @resultado;
+END
+GO
+
+
+
 CREATE OR ALTER FUNCTION gestion_tienda.obtenerCUIL (
     @ID_cliente INT -- Se define un nombre para el parámetro
 )

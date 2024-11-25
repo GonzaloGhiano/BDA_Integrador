@@ -32,6 +32,8 @@ GRANT EXECUTE ON SCHEMA::datos_clientes TO supervisores;
 GO
 GRANT EXECUTE ON SCHEMA::reportes TO supervisores;
 GO
+GRANT EXECUTE ON SCHEMA::datos_notas_credito TO supervisores;
+GO
 
 
 /*

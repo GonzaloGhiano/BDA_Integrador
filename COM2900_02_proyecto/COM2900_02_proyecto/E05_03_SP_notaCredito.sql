@@ -70,7 +70,7 @@ END
 GO
 
 
-CREATE OR ALTER PROCEDURE datos_ventas.iniciar_nota_credito
+CREATE OR ALTER PROCEDURE datos_notas_credito.iniciar_nota_credito
 @ID_factura int,
 @ID_empleado int,
 @ID_punto_venta int
@@ -103,7 +103,7 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE datos_ventas.nota_credito_agregarProducto
+CREATE OR ALTER PROCEDURE datos_notas_credito.nota_credito_agregarProducto
 @ID_punto_venta int,
 @ID_detalle_venta INT,
 @cantidad int
@@ -129,13 +129,16 @@ BEGIN
 
 	IF(@error = '')
 	BEGIN
+		--Obtenemos los subtotales necesarios para la inserción a las tablas temporales
 		SET @subtotalAux = (SELECT TOP 1 dv.subtotal from gestion_ventas.Detalle_venta dv where dv.ID_detalle_venta = @ID_detalle_venta)
 		SET @precioUnitario = @subtotalAux / (SELECT TOP 1 dv.cantidad from gestion_ventas.Detalle_venta dv where dv.ID_detalle_venta = @ID_detalle_venta)
 		SET @ID_prod_aux = (SELECT TOP 1 dv.ID_prod from gestion_ventas.Detalle_venta dv where dv.ID_detalle_venta = @ID_detalle_venta)
 
+		--Insertamos un pre detalle
 		insert gestion_ventas.Pre_detalle_notaCredito(ID_punto_venta, ID_detalle_venta, ID_prod, cantidad, subtotal)
 		values(@ID_punto_venta, @ID_detalle_venta, @ID_prod_aux , @cantidad, @precioUnitario * @cantidad);
 
+		--Actualizamos la preNota de credito
 		UPDATE gestion_ventas.Pre_notaCredito
 		SET total = total + @precioUnitario*@cantidad
 		WHERE ID_punto_venta = @ID_punto_venta;
@@ -147,7 +150,12 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE datos_ventas.confirmar_notaCredito
+
+
+----------------------------------------------------------------------
+--SP de confirmacion de una nota de credito
+----------------------------------------------------------------------
+CREATE OR ALTER PROCEDURE datos_notas_credito.confirmar_notaCredito
 @ID_punto_venta int
 AS
 BEGIN
@@ -157,8 +165,8 @@ BEGIN
 	--Validar nota de credito en curso
 	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Pre_notaCredito pre_nc where pre_nc.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'ERROR: No hay Nota de Credito en curso';
-
-	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Pre_detalle_notaCredito pre_detalle where pre_detalle.ID_punto_venta = @ID_punto_venta))
+	--Validamos que no se realice una nota de credito vacia
+	ELSE IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Pre_detalle_notaCredito pre_detalle where pre_detalle.ID_punto_venta = @ID_punto_venta))
 		SET @error = @error + 'ERROR: La nota no tiene detalles';
 
 	IF(@error = '')
@@ -193,5 +201,54 @@ BEGIN
 	BEGIN
 		RAISERROR (@error, 16, 1);
 	END
+END
+GO
+
+
+----------------------------------------------------------------------
+--SP de cancelación de una nota de credito en curso
+----------------------------------------------------------------------
+CREATE OR ALTER PROCEDURE datos_notas_credito.cancelar_notaCredito_enCurso
+@ID_punto_venta INT
+AS
+BEGIN
+	DECLARE @error varchar(max) = '',
+	@ID_venta INT = 0;
+
+	--Validamos que exista una nota en curso en este punto de venta
+	IF(NOT EXISTS(SELECT 1 FROM gestion_ventas.Pre_notaCredito pre_nc 
+					where pre_nc.ID_punto_venta = @ID_punto_venta))
+		SET @error = @error + 'ERROR: No hay nota de credito en curso en ese punto de venta';
+
+	IF(@error = '')
+	BEGIN
+		--Borramos la factura de temporales
+		DELETE FROM gestion_ventas.Pre_notaCredito
+		WHERE ID_punto_venta = @ID_punto_venta;
+	
+		--Borramos los detalles temporales
+		DELETE FROM gestion_ventas.Pre_detalle_notaCredito
+		WHERE ID_punto_venta = @ID_punto_venta;
+
+	END
+	ELSE
+	BEGIN
+		RAISERROR (@error, 16, 1);
+	END
+END
+GO
+
+
+----------------------------------------------------------------------
+--SP de cancelación de todas las notas de credito en curso
+----------------------------------------------------------------------
+CREATE OR ALTER PROCEDURE datos_notas_credito.cancelar_todasLasNotasCredito_enCurso
+AS
+BEGIN
+		--Borramos las pre-nota de credito
+	DELETE FROM gestion_ventas.Pre_notaCredito;
+	
+		--Borramos los detalles temporales
+	DELETE FROM gestion_ventas.Pre_detalle_notaCredito;
 END
 GO
