@@ -58,5 +58,5 @@ GO
 
 --Total acumulado de ventas con detalle para una fecha y sucursal
 
-Exec reportes.reporte_total_acumulado_ventas @fecha='2019-03-16',@nombre_sucursal='Ramos mejía'
+Exec reportes.reporte_acumulado_ventas_sucursal @fecha='2019-03-16',@nombre_sucursal='Ramos mejía'
 GO
