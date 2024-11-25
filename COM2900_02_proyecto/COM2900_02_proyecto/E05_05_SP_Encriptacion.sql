@@ -53,36 +53,46 @@ GO
 CREATE OR ALTER PROCEDURE encriptacion.configuracion_encriptacion
 AS
 BEGIN
+	
+	IF(EXISTS(SELECT 1 FROM sys.check_constraints cc
+                        INNER JOIN sys.tables t ON cc.parent_object_id = t.object_id
+                        WHERE cc.name = 'CHECK_CUIL' AND t.name = 'gestion_tienda.Empleado'))
+	BEGIN
     -- Agregar nuevas columnas para datos encriptados
-    ALTER TABLE gestion_tienda.Empleado ADD nombre_vb VARBINARY(8000);
-    ALTER TABLE gestion_tienda.Empleado ADD apellido_vb VARBINARY(8000);
-    ALTER TABLE gestion_tienda.Empleado ADD num_documento_vb VARBINARY(8000);
-	ALTER TABLE gestion_tienda.Empleado ADD direccion_vb VARBINARY(8000);
-	ALTER TABLE gestion_tienda.Empleado ADD email_personal_vb VARBINARY(8000);
-	ALTER TABLE gestion_tienda.Empleado ADD email_empresarial_vb VARBINARY(8000);
-	ALTER TABLE gestion_tienda.Empleado ADD CUIL_vb VARBINARY(8000);
+		ALTER TABLE gestion_tienda.Empleado ADD nombre_vb VARBINARY(8000);
+		ALTER TABLE gestion_tienda.Empleado ADD apellido_vb VARBINARY(8000);
+		ALTER TABLE gestion_tienda.Empleado ADD num_documento_vb VARBINARY(8000);
+		ALTER TABLE gestion_tienda.Empleado ADD direccion_vb VARBINARY(8000);
+		ALTER TABLE gestion_tienda.Empleado ADD email_personal_vb VARBINARY(8000);
+		ALTER TABLE gestion_tienda.Empleado ADD email_empresarial_vb VARBINARY(8000);
+		ALTER TABLE gestion_tienda.Empleado ADD CUIL_vb VARBINARY(8000);
 
-	ALTER TABLE gestion_tienda.Empleado DROP CONSTRAINT UNIQUE_TipoDoc_NumDoc;
-	ALTER TABLE gestion_tienda.Empleado DROP CONSTRAINT CHECK_CUIL;
+		ALTER TABLE gestion_tienda.Empleado DROP CONSTRAINT UNIQUE_TipoDoc_NumDoc;
+		ALTER TABLE gestion_tienda.Empleado DROP CONSTRAINT CHECK_CUIL;
 
     -- Eliminar las columnas originales
-    ALTER TABLE gestion_tienda.Empleado DROP COLUMN nombre;
-    ALTER TABLE gestion_tienda.Empleado DROP COLUMN apellido;
-    ALTER TABLE gestion_tienda.Empleado DROP COLUMN num_documento;
-	ALTER TABLE gestion_tienda.Empleado DROP COLUMN direccion;
-    ALTER TABLE gestion_tienda.Empleado DROP COLUMN email_personal;
-    ALTER TABLE gestion_tienda.Empleado DROP COLUMN email_empresarial;
-	ALTER TABLE gestion_tienda.Empleado DROP COLUMN CUIL;
+		ALTER TABLE gestion_tienda.Empleado DROP COLUMN nombre;
+		ALTER TABLE gestion_tienda.Empleado DROP COLUMN apellido;
+		ALTER TABLE gestion_tienda.Empleado DROP COLUMN num_documento;
+		ALTER TABLE gestion_tienda.Empleado DROP COLUMN direccion;
+		ALTER TABLE gestion_tienda.Empleado DROP COLUMN email_personal;
+		ALTER TABLE gestion_tienda.Empleado DROP COLUMN email_empresarial;
+		ALTER TABLE gestion_tienda.Empleado DROP COLUMN CUIL;
 
 
     -- Renombrar las columnas encriptadas a los nombres originales
-    EXEC sp_rename 'gestion_tienda.Empleado.nombre_vb', 'nombre', 'COLUMN';
-    EXEC sp_rename 'gestion_tienda.Empleado.apellido_vb', 'apellido', 'COLUMN';
-    EXEC sp_rename 'gestion_tienda.Empleado.num_documento_vb', 'num_documento', 'COLUMN';
-	EXEC sp_rename 'gestion_tienda.Empleado.direccion_vb', 'direccion', 'COLUMN';
-	EXEC sp_rename 'gestion_tienda.Empleado.email_personal_vb', 'email_personal', 'COLUMN';
-	EXEC sp_rename 'gestion_tienda.Empleado.email_empresarial_vb', 'email_empresarial', 'COLUMN';
-	EXEC sp_rename 'gestion_tienda.Empleado.CUIL_vb', 'CUIL', 'COLUMN';
+		EXEC sp_rename 'gestion_tienda.Empleado.nombre_vb', 'nombre', 'COLUMN';
+		EXEC sp_rename 'gestion_tienda.Empleado.apellido_vb', 'apellido', 'COLUMN';
+		EXEC sp_rename 'gestion_tienda.Empleado.num_documento_vb', 'num_documento', 'COLUMN';
+		EXEC sp_rename 'gestion_tienda.Empleado.direccion_vb', 'direccion', 'COLUMN';
+		EXEC sp_rename 'gestion_tienda.Empleado.email_personal_vb', 'email_personal', 'COLUMN';
+		EXEC sp_rename 'gestion_tienda.Empleado.email_empresarial_vb', 'email_empresarial', 'COLUMN';
+		EXEC sp_rename 'gestion_tienda.Empleado.CUIL_vb', 'CUIL', 'COLUMN';
+	END
+	ELSE
+	BEGIN
+		print('La encriptacion ya esta configurada.');
+	END
 END
 GO
 

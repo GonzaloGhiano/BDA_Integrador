@@ -20,13 +20,18 @@ GO
 -------------------------------------------------------------------------------------------------
 --	Prueba unitaria de inserción masiva con encriptación de los empleados
 -------------------------------------------------------------------------------------------------
+--Ejecutarlo antes de que se haga la inserción masiva
+exec encriptacion.configuracion_encriptacion; 
 
+--Importamos del archivo "informacion complementaria" los datos de los empleados
 exec inserts.insertar_empleado_encriptado @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\informacion_complementaria.xlsx'
 GO
 
+--Mostramos los datos de los empleados encriptados
 SELECT TOP 30 * FROM gestion_tienda.Empleado;
 GO
 
+--Mostramos los datos desencriptados
 EXEC gestion_tienda.mostrarEmpleados_desencriptados
 GO
 
@@ -34,6 +39,7 @@ GO
 --	Prueba unitaria de inserción de un empleado con datos encriptados
 -------------------------------------------------------------------------------------------------
 
+--Insertamos un empleado
 EXEC datos_tienda.insertar_empleado_encriptado
 @legajo = 9999,
 @nombre = 'Gonzalo',
@@ -48,8 +54,10 @@ EXEC datos_tienda.insertar_empleado_encriptado
 @sucursal_id = 1,
 @turno = 'NA';
 
+--Mostramos los datos de los empleados encriptados
 SELECT TOP 30 * FROM gestion_tienda.Empleado;
 GO
 
+--Mostramos los datos desencriptados
 EXEC gestion_tienda.mostrarEmpleados_desencriptados
 GO

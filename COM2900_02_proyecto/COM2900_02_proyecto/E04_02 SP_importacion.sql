@@ -102,6 +102,8 @@ EXEC inserts.insertarCargosArchivos;
 GO
 SELECT TOP 10 * FROM gestion_tienda.Cargo;
 
+exec encriptacion.configuracion_encriptacion; 
+GO
 --exec inserts.insertar_empleado @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\informacion_complementaria.xlsx'
 exec inserts.insertar_empleado_encriptado @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\informacion_complementaria.xlsx'
 GO
@@ -117,9 +119,6 @@ SELECT * FROM gestion_ventas.Medio_de_Pago;
 ---------------------------------------------------------------------------------
 -- Prueba de importacion del archivo venta
 ---------------------------------------------------------------------------------
---DELETE FROM gestion_ventas.Detalle_venta
---DELETE FROM gestion_ventas.Venta
---DELETE FROM gestion_ventas.Factura
 
 exec inserts.insertar_venta @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final\TP_integrador_Archivos\Ventas_registradas.csv'
 GO
