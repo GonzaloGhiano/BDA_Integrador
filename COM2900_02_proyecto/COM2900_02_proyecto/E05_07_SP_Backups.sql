@@ -21,7 +21,7 @@ GO
 -----------------------------------------------------------------------------------
 -- Creacion del backup FULL de la base
 -----------------------------------------------------------------------------------
-CREATE OR ALTER PROCEDURE CrearRespaldoCompleto
+CREATE OR ALTER PROCEDURE gestion_tienda.CrearRespaldoCompleto
 @ruta varchar(max)
 AS
 BEGIN
@@ -51,7 +51,7 @@ GO
 -----------------------------------------------------------------------------------
 -- Creacion del backup DIFERENCIAL de la base
 -----------------------------------------------------------------------------------
-CREATE OR ALTER PROCEDURE CrearRespaldoDiferencial
+CREATE OR ALTER PROCEDURE gestion_tienda.CrearRespaldoDiferencial
 @ruta varchar(max)
 AS
 BEGIN

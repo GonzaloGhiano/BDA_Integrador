@@ -52,7 +52,7 @@ IF NOT EXISTS (
 )
 BEGIN
     ALTER ROLE cajeros ADD MEMBER Felipe;
-    PRINT 'Usuario Felipe añadido al rol supervisores.';
+    PRINT 'Usuario Felipe añadido al rol cajeros.';
 END
 GO
 
@@ -106,3 +106,4 @@ FROM sys.server_principals sp
 JOIN sys.server_role_members srm ON sp.principal_id = srm.member_principal_id
 JOIN sys.server_principals spr ON spr.principal_id = srm.role_principal_id
 WHERE spr.name = 'sysadmin';
+

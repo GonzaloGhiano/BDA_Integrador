@@ -18,12 +18,12 @@ USE Com2900G02;
 GO
 
 --Ejecutamos un respaldo FULL de la base
-EXEC CrearRespaldoCompleto
+EXEC gestion_tienda.CrearRespaldoCompleto
 @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final'
 GO
 
 --Ejecutamos un respaldo DIFENCIAL de la base
-EXEC CrearRespaldoDiferencial
+EXEC gestion_tienda.CrearRespaldoDiferencial
 @ruta = 'C:\Users\Gonza\Desktop\BDA_Tp_Final'
 GO
 
