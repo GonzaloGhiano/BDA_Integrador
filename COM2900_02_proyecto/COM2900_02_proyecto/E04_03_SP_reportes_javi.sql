@@ -22,18 +22,18 @@ CREATE or ALTER PROCEDURE reportes.reporte_ventas
 AS
 BEGIN
 	SELECT 
-		f.ID_factura AS [ID_Factura],
-		f.tipo_factura AS [Tipo_de_Factura],
+		f.ID_factura AS [ID Factura],
+		f.tipo_factura AS [Tipo de Factura],
 		su.ciudad AS [Ciudad],
-		c.tipo_cliente AS [Tipo de cliente],
-		c.genero AS [Genero],
-		lp.linea_prod AS [Linea_de_producto],
+		--c.tipo_cliente AS [Tipo de cliente],
+		--c.genero AS [Genero],
+		lp.linea_prod AS [Linea de producto],
 		p.nombre_Prod AS [Producto],
-		p.precio AS [Precio_Unitario],
+		p.precio AS [Precio Unitario],
 		dv.cantidad AS [Cantidad],
 		FORMAT(f.fecha_hora_emision, 'dd/MM/yyyy') AS [Fecha],
 		FORMAT(f.fecha_hora_emision, 'HH:mm') AS [Hora],
-		mp.nombre_ES AS [Medio_de_Pago],
+		mp.nombre_ES AS [Medio de Pago],
 		e.legajo AS [Empleado],
 		su.nombre_sucursal AS [Sucursal]
 	FROM 
@@ -44,7 +44,7 @@ BEGIN
 		gestion_tienda.punto_de_venta pv ON v.ID_punto_venta = pv.ID_punto_venta
 	JOIN 
 		gestion_tienda.Sucursal su ON pv.ID_sucursal = su.ID_sucursal
-	LEFT JOIN 
+	JOIN 
 		gestion_clientes.Cliente c ON v.ID_cliente = c.ID_cliente
 	JOIN 
 		gestion_ventas.Detalle_venta dv ON v.ID_venta = dv.ID_venta
@@ -69,8 +69,8 @@ BEGIN
 	SET Language 'Spanish';
 
     SELECT 
-        DATENAME(WEEKDAY, f.fecha_hora_emision) AS [Día_de_la_Semana], --nombre del día
-        SUM(f.total_neto_sinIVA + f.IVA) AS [Total_Facturado]         --sumo las ventas junto al IVA
+        DATENAME(WEEKDAY, f.fecha_hora_emision) AS [Día de la Semana], --nombre del día
+        SUM(f.total_neto_sinIVA + f.IVA) AS [Total Facturado]         --sumo las ventas junto al IVA
     FROM 
         gestion_ventas.Factura f
     WHERE 
@@ -87,8 +87,7 @@ BEGIN
             WHEN 'Viernes' THEN 5
             WHEN 'Sábado' THEN 6
             WHEN 'Domingo' THEN 7
-        END
-	FOR XML AUTO;
+        END;
 END;
 GO
 
@@ -97,9 +96,9 @@ CREATE or ALTER PROCEDURE reportes.reporte_ventas_trimestral
 AS
 BEGIN
     SELECT 
-        e.turno AS [Turno_de_Trabajo],
+        e.turno AS [Turno de Trabajo],
 		cast(month(f.fecha_hora_emision) as INT) AS [Mes],
-        SUM(f.total_neto_sinIVA + f.IVA) AS [Total_Facturado]
+        SUM(f.total_neto_sinIVA + f.IVA) AS [Total Facturado]
     FROM 
         gestion_ventas.Factura f
         INNER JOIN gestion_ventas.Venta v ON f.ID_factura = v.ID_factura
@@ -108,8 +107,7 @@ BEGIN
         e.turno, 
 		cast(month(f.fecha_hora_emision) as INT)
     ORDER BY 
-        e.turno
-	FOR XML AUTO;
+        e.turno;
 END;
 GO
 
@@ -121,7 +119,7 @@ AS
 BEGIN
     SELECT 
         p.nombre_Prod AS [Producto],
-        SUM(dv.cantidad) AS [Cantidad_Vendida]
+        SUM(dv.cantidad) AS [Cantidad Vendida]
     FROM 
         gestion_ventas.Detalle_venta dv
         INNER JOIN gestion_productos.Producto p ON dv.ID_prod = p.ID_prod
@@ -132,8 +130,7 @@ BEGIN
     GROUP BY 
         p.nombre_Prod
     ORDER BY 
-        [Cantidad_Vendida] DESC
-	FOR XML AUTO;
+        [Cantidad Vendida] DESC;
 END;
 GO
 
@@ -145,7 +142,7 @@ AS
 BEGIN
     SELECT 
         s.nombre_sucursal AS [Sucursal],
-        SUM(dv.cantidad) AS [Cantidad_Vendida]
+        SUM(dv.cantidad) AS [Cantidad Vendida]
     FROM 
         gestion_ventas.Detalle_venta dv
         INNER JOIN gestion_ventas.Venta v ON dv.ID_venta = v.ID_venta
@@ -157,8 +154,7 @@ BEGIN
     GROUP BY 
         s.nombre_sucursal
     ORDER BY 
-        [Cantidad_Vendida] DESC
-	FOR XML AUTO;
+        [Cantidad Vendida] DESC;
 END;
 GO
 
@@ -173,7 +169,7 @@ BEGIN
 	SELECT TOP 5
         p.nombre_Prod AS [Producto],
         DATEDIFF(WEEK, DATEFROMPARTS(YEAR(f.fecha_hora_emision), MONTH(f.fecha_hora_emision), 1), f.fecha_hora_emision) + 1 AS [Semana],
-        SUM(dv.cantidad) AS [Cantidad_Vendida]
+        SUM(dv.cantidad) AS [Cantidad Vendida]
     FROM 
         gestion_ventas.Detalle_venta dv
         INNER JOIN gestion_productos.Producto p ON dv.ID_prod = p.ID_prod
@@ -185,8 +181,7 @@ BEGIN
         p.nombre_Prod, 
         DATEDIFF(WEEK, DATEFROMPARTS(YEAR(f.fecha_hora_emision), MONTH(f.fecha_hora_emision), 1), f.fecha_hora_emision) + 1
     ORDER BY 
-        [Cantidad_Vendida] DESC
-	FOR XML AUTO;
+        [Cantidad Vendida] DESC;
 END;
 GO
 
@@ -198,7 +193,7 @@ AS
 BEGIN
     SELECT TOP 5
         p.nombre_Prod AS [Producto],
-        SUM(dv.cantidad) AS [Cantidad_Vendida]
+        SUM(dv.cantidad) AS [Cantidad Vendida]
     FROM 
         gestion_ventas.Detalle_venta dv
         INNER JOIN gestion_productos.Producto p ON dv.ID_prod = p.ID_prod
@@ -209,8 +204,7 @@ BEGIN
     GROUP BY 
         p.nombre_Prod
     ORDER BY 
-        [Cantidad_Vendida] ASC
-	FOR XML AUTO;
+        [Cantidad Vendida] ASC;
 END;
 GO
 
@@ -225,7 +219,7 @@ BEGIN
         FORMAT(v.fecha, 'dd/MM/yyyy') AS [Fecha],
         f.total_neto_sinIVA + f.IVA AS [Total], -- Total de la fila con IVA
         SUM(f.total_neto_sinIVA + f.IVA) 
-            OVER (PARTITION BY s.ID_sucursal, v.fecha ORDER BY v.ID_venta) AS [Total_Acumulado] -- Total acumulado
+            OVER (PARTITION BY s.ID_sucursal, v.fecha ORDER BY v.ID_venta) AS [Total Acumulado] -- Total acumulado
     FROM 
         gestion_ventas.Venta v
         INNER JOIN gestion_ventas.Detalle_venta dv ON v.ID_venta = dv.ID_venta
@@ -236,7 +230,7 @@ BEGIN
         v.fecha = @Fecha
         AND s.nombre_sucursal = @nombre_sucursal
     ORDER BY 
-        [Total_Acumulado] desc -- Ordenar por venta y detalle
-	FOR XML AUTO;
+        [Total Acumulado] desc; -- Ordenar por venta y detalle
 END;
 GO
+

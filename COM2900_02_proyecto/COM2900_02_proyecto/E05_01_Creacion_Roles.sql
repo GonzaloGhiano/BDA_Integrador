@@ -1,4 +1,17 @@
+/*
+	Entrega 5. Grupo 02.
 
+	Alumnos: 
+	43448036 Ghiano Gonzalo Agustín 
+	40853807 Felipe Morales 
+	38621360 Javier Bastante
+
+	Materia: BASE DE DATOS APLICADAS (3641)
+	Comisión: 01-2900
+	Fecha de entrega: 12/11/2024
+
+	Script correspondiente creacion roles que se utilizaran en el sistema
+*/
 
 USE Com2900G02;
 GO

@@ -191,8 +191,8 @@ BEGIN
 	where ocurrencias > 1;
 
 
-	INSERT INTO gestion_productos.Producto (nombre_Prod, categoria, precio, moneda)
-	SELECT producto, 'Electronico' as categoria, precio_dolares, 'USD'
+	INSERT INTO gestion_productos.Producto (nombre_Prod, categoria, precio, moneda, referencia_unidad)
+	SELECT producto, 'Electronico' as categoria, precio_dolares, 'USD', 'Unidad'
 	FROM #Electronic_temp et
 	WHERE et.producto COLLATE Modern_Spanish_CI_AI NOT IN 
     (SELECT nombre_prod FROM gestion_productos.Producto);
@@ -236,8 +236,8 @@ BEGIN
 	exec sp_executesql @cadenaSQL;
 
 
-	insert gestion_productos.Producto (nombre_Prod,categoria, precio, moneda)
-	select nombre_producto,'Importado' as cat, precio_unidad, 'USD'
+	insert gestion_productos.Producto (nombre_Prod,categoria, precio, moneda, referencia_unidad)
+	select nombre_producto,'Importado' as cat, precio_unidad, 'USD', 'Unidad'
 	from #Importado_temp it
 	where it.nombre_producto COLLATE Modern_Spanish_CI_AI NOT IN 
     (select nombre_prod from gestion_productos.Producto);

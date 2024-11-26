@@ -160,10 +160,10 @@ GO
 --reflejados en las tablas permanentes
 EXEC datos_ventas.cerrarVenta
 @ID_punto_venta = 1,
-@nro_factura = 'MJJ-AAV-ANA',
-@tipo_factura = 'B',
+@nro_factura = 'MDJ-AAV-A6A',
+@tipo_factura = 'C',
 @id_medio_pago = 1,
-@identificador_pago = '1129421';
+@identificador_pago = '7729421';
 GO
 
 SELECT TOP 5 * FROM gestion_ventas.Venta;
@@ -172,6 +172,8 @@ SELECT TOP 20 * FROM gestion_ventas.Detalle_venta;
 select top 3 * from gestion_ventas.Prefactura;
 select top 3 * from gestion_ventas.Predetalle;
 GO
+
+SELECT * from gestion_ventas.Factura where nro_factura like 'MDJ-AAV-A6A'
 
 ----------------------------------------------------------------------
 --Prueba unitaria Cliente con CUIL

@@ -143,8 +143,8 @@
           <FullPath>E05_01_Creacion_Roles.sql</FullPath>
         </FileNode>
         <FileNode Name="E05_02_Test_usuarios.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-7BHKIU7\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-7BHKIU7\SQLEXPRESS</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>E05_02_Test_usuarios.sql</FullPath>
         </FileNode>
@@ -171,6 +171,18 @@
           <AssociatedConnSrvName>DESKTOP-7BHKIU7\SQLEXPRESS</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>E05_06_Test_Encriptacion.sql</FullPath>
+        </FileNode>
+        <FileNode Name="E05_07_SP_Backups.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-7BHKIU7\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-7BHKIU7\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>E05_07_SP_Backups.sql</FullPath>
+        </FileNode>
+        <FileNode Name="E05_08_Tests_Backups.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:DESKTOP-7BHKIU7\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>DESKTOP-7BHKIU7\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>E05_08_Tests_Backups.sql</FullPath>
         </FileNode>
       </Items>
     </LogicalFolder>

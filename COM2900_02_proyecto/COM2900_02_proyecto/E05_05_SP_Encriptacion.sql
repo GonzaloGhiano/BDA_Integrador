@@ -18,7 +18,7 @@ USE Com2900G02;
 GO
 
 -------------------------------------------------------------------------------------------------
---	STORE PROCEDURE PARA CREAR EL CERTIFICADO
+--	CREAR EL CERTIFICADO
 -------------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT * FROM sys.certificates WHERE name = 'Certificado_Empleados')
 BEGIN
@@ -33,7 +33,7 @@ END
 GO
 
 -------------------------------------------------------------------------------------------------
---	STORE PROCEDURE PARA CREAR LA CLAVE SIMETRICA
+--	CREAR LA CLAVE SIMETRICA
 -------------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT * FROM sys.symmetric_keys WHERE name = 'Empleados_ClaveSimetrica')
 BEGIN
@@ -54,9 +54,15 @@ CREATE OR ALTER PROCEDURE encriptacion.configuracion_encriptacion
 AS
 BEGIN
 	
-	IF(EXISTS(SELECT 1 FROM sys.check_constraints cc
-                        INNER JOIN sys.tables t ON cc.parent_object_id = t.object_id
-                        WHERE cc.name = 'CHECK_CUIL' AND t.name = 'gestion_tienda.Empleado'))
+	IF EXISTS (
+		SELECT 1 
+		FROM sys.check_constraints cc
+		INNER JOIN sys.tables t ON cc.parent_object_id = t.object_id
+		INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
+		WHERE cc.name = 'CHECK_CUIL' 
+		 AND t.name = 'Empleado' 
+		 AND s.name = 'gestion_tienda'
+	)
 	BEGIN
     -- Agregar nuevas columnas para datos encriptados
 		ALTER TABLE gestion_tienda.Empleado ADD nombre_vb VARBINARY(8000);
@@ -88,6 +94,8 @@ BEGIN
 		EXEC sp_rename 'gestion_tienda.Empleado.email_personal_vb', 'email_personal', 'COLUMN';
 		EXEC sp_rename 'gestion_tienda.Empleado.email_empresarial_vb', 'email_empresarial', 'COLUMN';
 		EXEC sp_rename 'gestion_tienda.Empleado.CUIL_vb', 'CUIL', 'COLUMN';
+
+		print('Tablas modificadas');
 	END
 	ELSE
 	BEGIN
@@ -201,7 +209,7 @@ BEGIN
 		legajo,
 		CONVERT(VARCHAR(40), DecryptByKey(nombre)) AS nombre,
 		CONVERT(VARCHAR(40), DecryptByKey(apellido)) AS apellido,
-		CONVERT(VARCHAR(8), DecryptByKey(num_documento)) AS num_documento,
+		CONVERT(VARCHAR(8), DecryptByKey(CONVERT(VARBINARY(8000), num_documento))) AS num_documento,
 		tipo_documento,
 		CONVERT(VARCHAR(100), DecryptByKey(direccion)) AS direccion,
 		CONVERT(VARCHAR(80), DecryptByKey(email_personal)) AS email_personal,
